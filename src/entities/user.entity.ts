@@ -5,7 +5,17 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
+import { Role } from './role.entity';
+
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  SUSPENDED = 'suspended',
+}
 
 @Entity('users')
 export class User {
@@ -19,29 +29,21 @@ export class User {
   email: string;
 
   @Column()
+  @Exclude()
   password: string;
-
-  @CreateDateColumn()
-  created_at: Date;
 
   @Column({
     type: 'enum',
-    enum: ['active', 'inactive', 'suspended'],
-    default: 'active',
+    enum: UserStatus,
+    default: UserStatus.ACTIVE,
   })
-  status: string;
+  status: UserStatus;
 
   @Column({ nullable: true })
   last_login: Date;
 
-  @UpdateDateColumn()
-  updated_at: Date;
-
   @Column({ nullable: true })
   last_activity: Date;
-
-  @DeleteDateColumn()
-  deleted_at: Date;
 
   @Column({ nullable: true })
   phone: string;
@@ -54,4 +56,21 @@ export class User {
 
   @Column({ nullable: true })
   password_changed_at: Date;
+
+  @ManyToMany(() => Role)
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
+  })
+  roles: Role[];
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
+
+  @DeleteDateColumn()
+  deleted_at: Date;
 }
