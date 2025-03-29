@@ -24,7 +24,7 @@ export class AuthService {
     username: string;
     email?: string;
     password: string;
-    roleName?: string;
+    role?: string;
     phone?: string;
   }) {
     // Check for existing username
@@ -51,12 +51,12 @@ export class AuthService {
 
     // Find the role by name
     let role: Role | null = null;
-    if (createUserDto.roleName) {
+    if (createUserDto.role) {
       role = await this.roleRepository.findOne({
-        where: { name: createUserDto.roleName },
+        where: { name: createUserDto.role.toLowerCase() },
       });
       if (!role) {
-        throw new ConflictException(`Role ${createUserDto.roleName} not found`);
+        throw new ConflictException(`Role ${createUserDto.role} not found`);
       }
     } else {
       // If no role specified, assign default 'user' role
