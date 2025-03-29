@@ -127,7 +127,7 @@ export class AuthService {
       sub: user.id,
       username: user.username,
       email: user.email,
-      roles: user.roles.map((role) => role.name),
+      roles: user.roles.map((role) => role.name.toUpperCase()),
     };
     const accessToken = this.jwtService.sign(payload);
 
