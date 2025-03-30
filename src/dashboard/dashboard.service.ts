@@ -15,6 +15,8 @@ import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/entities/user.entity';
 import { ConnectWalletDto } from '../wallet/dto/connect-wallet.dto';
 import { TransactionDto } from '../wallet/dto/transaction.dto';
+import { ContractService } from '../contracts/contract.service';
+import { ethers } from 'ethers';
 
 @Injectable()
 export class DashboardService {
@@ -25,10 +27,13 @@ export class DashboardService {
     private walletRepository: Repository<Wallet>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private contractService: ContractService,
   ) {}
 
   async getCustomerDashboard(userId: string) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({
+      where: { id: Number(userId) },
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -39,12 +44,18 @@ export class DashboardService {
       this.getCustomerTicketStats(userId),
     ]);
 
+    // Get contract balance
+    const contractBalance = await this.contractService.getCustomerBalance(
+      user.walletAddress,
+    );
+
     return {
       user: {
         id: user.id,
         username: user.username,
         email: user.email,
         balance: user.balance,
+        contractBalance: this.contractService.fromWei(contractBalance),
       },
       wallets: wallets.map((wallet) => ({
         type: wallet.type,
@@ -60,7 +71,9 @@ export class DashboardService {
   }
 
   async getFulfillerDashboard(userId: string) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({
+      where: { id: Number(userId) },
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -72,12 +85,19 @@ export class DashboardService {
       this.calculateFulfillerEarnings(userId),
     ]);
 
+    // Get contract balance and fulfiller info
+    const [contractBalance, fulfillerInfo] = await Promise.all([
+      this.contractService.getFulfillerBalance(user.walletAddress),
+      this.contractService.getFulfillerInfo(user.walletAddress),
+    ]);
+
     return {
       user: {
         id: user.id,
         username: user.username,
         email: user.email,
         balance: user.balance,
+        contractBalance: this.contractService.fromWei(contractBalance),
       },
       wallets: wallets.map((wallet) => ({
         type: wallet.type,
@@ -90,6 +110,14 @@ export class DashboardService {
       earnings,
       availableTasks: await this.getAvailableTasks(),
       performance: await this.getFulfillerPerformance(userId),
+      fulfillerInfo: {
+        supportedPaymentMethods: fulfillerInfo.supportedPaymentMethods,
+        totalCompletedTickets: fulfillerInfo.totalCompletedTickets.toString(),
+        totalEarnings: this.contractService.fromWei(
+          fulfillerInfo.totalEarnings,
+        ),
+        isActive: fulfillerInfo.isActive,
+      },
     };
   }
 
@@ -115,10 +143,31 @@ export class DashboardService {
       lastConnectedAt: new Date(),
     });
 
+    // Update user's wallet address
+    const user = await this.userRepository.findOne({
+      where: { id: Number(userId) },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    user.walletAddress = connectWalletDto.walletAddress;
+    await this.userRepository.save(user);
+
     return this.walletRepository.save(wallet);
   }
 
   async deposit(userId: string, transactionDto: TransactionDto) {
+    const user = await this.userRepository.findOne({
+      where: { id: Number(userId) },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.walletAddress) {
+      throw new BadRequestException('User wallet address not set');
+    }
+
     const wallet = await this.walletRepository.findOne({
       where: {
         userId,
@@ -134,11 +183,28 @@ export class DashboardService {
       throw new BadRequestException('Wallet is not active');
     }
 
+    // Convert amount to Wei and deposit to contract
+    const amountInWei = this.contractService.toWei(
+      transactionDto.amount.toString(),
+    );
+    await this.contractService.deposit(amountInWei);
+
     wallet.balance = Number(wallet.balance) + Number(transactionDto.amount);
     return this.walletRepository.save(wallet);
   }
 
   async withdraw(userId: string, transactionDto: TransactionDto) {
+    const user = await this.userRepository.findOne({
+      where: { id: Number(userId) },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.walletAddress) {
+      throw new BadRequestException('User wallet address not set');
+    }
+
     const wallet = await this.walletRepository.findOne({
       where: {
         userId,
@@ -158,11 +224,28 @@ export class DashboardService {
       throw new BadRequestException('Insufficient balance');
     }
 
+    // Convert amount to Wei and withdraw from contract
+    const amountInWei = this.contractService.toWei(
+      transactionDto.amount.toString(),
+    );
+    await this.contractService.withdraw(amountInWei);
+
     wallet.balance = Number(wallet.balance) - Number(transactionDto.amount);
     return this.walletRepository.save(wallet);
   }
 
   async getWalletBalance(userId: string, type: WalletType) {
+    const user = await this.userRepository.findOne({
+      where: { id: Number(userId) },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.walletAddress) {
+      throw new BadRequestException('User wallet address not set');
+    }
+
     const wallet = await this.walletRepository.findOne({
       where: {
         userId,
@@ -174,9 +257,15 @@ export class DashboardService {
       throw new NotFoundException('Wallet not found');
     }
 
+    // Get contract balance
+    const contractBalance = await this.contractService.getFulfillerBalance(
+      user.walletAddress,
+    );
+
     return {
       type: wallet.type,
       balance: wallet.balance,
+      contractBalance: this.contractService.fromWei(contractBalance),
       status: wallet.status,
       lastConnectedAt: wallet.lastConnectedAt,
     };
