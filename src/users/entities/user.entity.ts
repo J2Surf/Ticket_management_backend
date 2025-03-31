@@ -1,13 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
+import { Role } from '../../entities/role.entity';
 
-export enum UserRole {
-  CUSTOMER = 'CUSTOMER',
-  USER = 'USER',
-  FULFILLER = 'FULFILLER',
-  ADMIN = 'ADMIN',
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  SUSPENDED = 'suspended',
 }
 
-@Entity()
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -15,7 +21,7 @@ export class User {
   @Column()
   username: string;
 
-  @Column()
+  @Column({ nullable: true })
   email: string;
 
   @Column()
@@ -23,20 +29,43 @@ export class User {
 
   @Column({
     type: 'enum',
-    enum: UserRole,
-    default: UserRole.CUSTOMER,
+    enum: UserStatus,
+    default: UserStatus.ACTIVE,
   })
-  role: UserRole;
-
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  balance: number;
+  status: UserStatus;
 
   @Column({ nullable: true })
-  walletAddress: string;
+  last_login: Date;
+
+  @Column({ nullable: true })
+  last_activity: Date;
+
+  @Column({ nullable: true })
+  phone: string;
+
+  @Column({ default: 0 })
+  failed_login_attempts: number;
+
+  @Column({ nullable: true })
+  last_login_attempt: Date;
+
+  @Column({ nullable: true })
+  password_changed_at: Date;
+
+  @Column({ nullable: true })
+  deleted_at: Date;
+
+  @ManyToMany(() => Role)
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
+  })
+  roles: Role[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
+  created_at: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updatedAt: Date;
+  updated_at: Date;
 }

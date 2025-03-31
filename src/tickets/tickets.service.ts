@@ -64,8 +64,30 @@ export class TicketsService {
     return this.ticketRepository.save(ticket);
   }
 
-  async findAll(): Promise<Ticket[]> {
-    return this.ticketRepository.find();
+  async findAll(
+    status?: TicketStatus,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    data: Ticket[];
+    meta: { total: number; page: number; limit: number; totalPages: number };
+  }> {
+    const [tickets, total] = await this.ticketRepository.findAndCount({
+      where: status ? { status } : {},
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { created_at: 'DESC' },
+    });
+
+    return {
+      data: tickets,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string): Promise<Ticket> {
@@ -129,6 +151,7 @@ export class TicketsService {
     fulfiller: User,
     paymentImageUrl: string,
     transactionId: string,
+    user_id: number,
   ): Promise<Ticket> {
     const ticket = await this.findOne(id);
     if (ticket.status !== TicketStatus.VALIDATED) {
@@ -146,7 +169,7 @@ export class TicketsService {
     // Create transactions
     const transactions = [
       {
-        user_id: Number(id),
+        user_id: user_id,
         amount: ticket.amount,
         transaction_type: TransactionType.CREDIT,
         description: 'Ticket completion payment',

@@ -12,7 +12,6 @@ import {
   WalletType,
 } from '../wallet/entities/wallet.entity';
 import { User } from '../users/entities/user.entity';
-import { UserRole } from '../users/entities/user.entity';
 import { ConnectWalletDto } from '../wallet/dto/connect-wallet.dto';
 import { TransactionDto } from '../wallet/dto/transaction.dto';
 import { ContractService } from '../contracts/contract.service';
@@ -39,14 +38,14 @@ export class DashboardService {
     }
 
     const [wallets, recentTickets, ticketStats] = await Promise.all([
-      this.walletRepository.find({ where: { userId } }),
+      this.walletRepository.find({ where: { userId: Number(userId) } }),
       this.getRecentCustomerTickets(userId),
       this.getCustomerTicketStats(userId),
     ]);
 
     // Get contract balance
     const contractBalance = await this.contractService.getCustomerBalance(
-      user.walletAddress,
+      wallets[0]?.address,
     );
 
     return {
@@ -54,7 +53,6 @@ export class DashboardService {
         id: user.id,
         username: user.username,
         email: user.email,
-        balance: user.balance,
         contractBalance: this.contractService.fromWei(contractBalance),
       },
       wallets: wallets.map((wallet) => ({
@@ -79,7 +77,7 @@ export class DashboardService {
     }
 
     const [wallets, recentTickets, ticketStats, earnings] = await Promise.all([
-      this.walletRepository.find({ where: { userId } }),
+      this.walletRepository.find({ where: { userId: Number(userId) } }),
       this.getRecentFulfillerTickets(userId),
       this.getFulfillerTicketStats(userId),
       this.calculateFulfillerEarnings(userId),
@@ -87,16 +85,19 @@ export class DashboardService {
 
     // Get contract balance and fulfiller info
     const [contractBalance, fulfillerInfo] = await Promise.all([
-      this.contractService.getFulfillerBalance(user.walletAddress),
-      this.contractService.getFulfillerInfo(user.walletAddress),
+      this.contractService.getFulfillerBalance(wallets[0]?.address),
+      this.contractService.getFulfillerInfo(wallets[0]?.address),
     ]);
+
+    if (!wallets[0]?.address) {
+      throw new BadRequestException('No wallet connected');
+    }
 
     return {
       user: {
         id: user.id,
         username: user.username,
         email: user.email,
-        balance: user.balance,
         contractBalance: this.contractService.fromWei(contractBalance),
       },
       wallets: wallets.map((wallet) => ({
@@ -124,7 +125,7 @@ export class DashboardService {
   async connectWallet(userId: string, connectWalletDto: ConnectWalletDto) {
     const existingWallet = await this.walletRepository.findOne({
       where: {
-        userId,
+        userId: Number(userId),
         type: connectWalletDto.type,
       },
     });
@@ -136,22 +137,12 @@ export class DashboardService {
     }
 
     const wallet = this.walletRepository.create({
-      userId,
+      userId: Number(userId),
       type: connectWalletDto.type,
-      walletAddress: connectWalletDto.walletAddress,
+      address: connectWalletDto.walletAddress,
       status: WalletStatus.ACTIVE,
       lastConnectedAt: new Date(),
     });
-
-    // Update user's wallet address
-    const user = await this.userRepository.findOne({
-      where: { id: Number(userId) },
-    });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    user.walletAddress = connectWalletDto.walletAddress;
-    await this.userRepository.save(user);
 
     return this.walletRepository.save(wallet);
   }
@@ -164,13 +155,9 @@ export class DashboardService {
       throw new NotFoundException('User not found');
     }
 
-    if (!user.walletAddress) {
-      throw new BadRequestException('User wallet address not set');
-    }
-
     const wallet = await this.walletRepository.findOne({
       where: {
-        userId,
+        userId: Number(userId),
         type: transactionDto.type,
       },
     });
@@ -201,13 +188,9 @@ export class DashboardService {
       throw new NotFoundException('User not found');
     }
 
-    if (!user.walletAddress) {
-      throw new BadRequestException('User wallet address not set');
-    }
-
     const wallet = await this.walletRepository.findOne({
       where: {
-        userId,
+        userId: Number(userId),
         type: transactionDto.type,
       },
     });
@@ -242,13 +225,9 @@ export class DashboardService {
       throw new NotFoundException('User not found');
     }
 
-    if (!user.walletAddress) {
-      throw new BadRequestException('User wallet address not set');
-    }
-
     const wallet = await this.walletRepository.findOne({
       where: {
-        userId,
+        userId: Number(userId),
         type,
       },
     });
@@ -259,7 +238,7 @@ export class DashboardService {
 
     // Get contract balance
     const contractBalance = await this.contractService.getFulfillerBalance(
-      user.walletAddress,
+      wallet.address,
     );
 
     return {

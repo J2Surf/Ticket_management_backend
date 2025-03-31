@@ -11,7 +11,7 @@ import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WalletRoleGuard } from '../wallet/guards/wallet-role.guard';
 import { Roles } from '../wallet/decorators/roles.decorator';
-import { UserRole } from '../users/entities/user.entity';
+import { UserRole } from '../auth/enums/user-role.enum';
 import { ConnectWalletDto } from '../wallet/dto/connect-wallet.dto';
 import { TransactionDto } from '../wallet/dto/transaction.dto';
 import { WalletType } from '../wallet/entities/wallet.entity';

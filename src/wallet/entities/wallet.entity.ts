@@ -6,8 +6,10 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Transaction } from './transaction.entity';
 
 export enum WalletStatus {
   ACTIVE = 'ACTIVE',
@@ -19,19 +21,20 @@ export enum WalletType {
   ETH = 'ETH',
   BTC = 'BTC',
   USDT = 'USDT',
+  THB = 'THB',
 }
 
-@Entity()
+@Entity('wallets')
 export class Wallet {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @ManyToOne(() => User)
-  @JoinColumn()
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column()
-  userId: string;
+  @Column({ name: 'user_id' })
+  userId: number;
 
   @Column({
     type: 'enum',
@@ -40,11 +43,11 @@ export class Wallet {
   })
   type: WalletType;
 
-  @Column('decimal', { precision: 18, scale: 8, default: 0 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   balance: number;
 
-  @Column({ nullable: true })
-  walletAddress: string;
+  @Column({ name: 'address' })
+  address: string;
 
   @Column({
     type: 'enum',
@@ -53,12 +56,15 @@ export class Wallet {
   })
   status: WalletStatus;
 
-  @Column({ nullable: true })
+  @Column({ name: 'last_connected_at', nullable: true })
   lastConnectedAt: Date;
 
-  @CreateDateColumn()
+  @OneToMany(() => Transaction, (transaction) => transaction.wallet)
+  transactions: Transaction[];
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }
