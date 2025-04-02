@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Mar 10, 2025 at 04:04 PM
--- Server version: 8.0.37
--- PHP Version: 8.3.15
+-- Host: 127.0.0.1
+-- Generation Time: Apr 01, 2025 at 03:56 AM
+-- Server version: 10.4.28-MariaDB
+-- PHP Version: 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `tapsndrc_db1`
+-- Database: `tapsndrc_db`
 --
 
 -- --------------------------------------------------------
@@ -28,19 +28,19 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `batches` (
-  `id` int NOT NULL,
-  `batch_id` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `status` enum('pending','processing','completed','failed') COLLATE utf8mb3_unicode_ci DEFAULT 'pending',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `id` int(11) NOT NULL,
+  `batch_id` varchar(50) NOT NULL,
+  `status` enum('pending','processing','completed','failed') DEFAULT 'pending',
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
   `completed_at` timestamp NULL DEFAULT NULL,
-  `fulfiller_id` int DEFAULT NULL,
-  `payment_method` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `total_tickets` int DEFAULT '0',
-  `completed_tickets` int DEFAULT '0',
-  `batch_amount` decimal(10,2) DEFAULT '0.00',
+  `fulfiller_id` int(11) DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT NULL,
+  `total_tickets` int(11) DEFAULT 0,
+  `completed_tickets` int(11) DEFAULT 0,
+  `batch_amount` decimal(10,2) DEFAULT 0.00,
   `processing_started_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -49,18 +49,18 @@ CREATE TABLE `batches` (
 --
 
 CREATE TABLE `batch_tickets` (
-  `id` int NOT NULL,
-  `batch_id` int NOT NULL,
-  `ticket_id` int NOT NULL,
-  `status` varchar(20) COLLATE utf8mb3_unicode_ci DEFAULT 'pending',
-  `assigned_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `id` int(11) NOT NULL,
+  `batch_id` int(11) NOT NULL,
+  `ticket_id` int(11) NOT NULL,
+  `status` varchar(20) DEFAULT 'pending',
+  `assigned_at` timestamp NULL DEFAULT current_timestamp(),
   `completed_at` timestamp NULL DEFAULT NULL,
-  `amount` decimal(10,2) DEFAULT '0.00',
-  `processing_time` int DEFAULT '0',
-  `error_count` int DEFAULT '0',
-  `last_error` text COLLATE utf8mb3_unicode_ci,
+  `amount` decimal(10,2) DEFAULT 0.00,
+  `processing_time` int(11) DEFAULT 0,
+  `error_count` int(11) DEFAULT 0,
+  `last_error` text DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Triggers `batch_tickets`
@@ -83,11 +83,11 @@ DELIMITER ;
 --
 
 CREATE TABLE `bot_settings` (
-  `id` int NOT NULL,
-  `validation_group_id` varchar(255) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `notification_group_id` varchar(255) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `validation_group_id` varchar(255) DEFAULT NULL,
+  `notification_group_id` varchar(255) DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `bot_settings`
@@ -103,11 +103,11 @@ INSERT INTO `bot_settings` (`id`, `validation_group_id`, `notification_group_id`
 --
 
 CREATE TABLE `completion_images` (
-  `id` int NOT NULL,
-  `form_id` int NOT NULL,
-  `image_path` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
+  `id` int(11) NOT NULL,
+  `form_id` int(11) NOT NULL,
+  `image_path` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -116,11 +116,11 @@ CREATE TABLE `completion_images` (
 --
 
 CREATE TABLE `csrf_tokens` (
-  `id` int NOT NULL,
-  `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `user_id` int NOT NULL,
-  `expires_at` timestamp NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `id` int(11) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `expires_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -130,12 +130,12 @@ CREATE TABLE `csrf_tokens` (
 --
 
 CREATE TABLE `events` (
-  `id` int NOT NULL,
-  `event_type` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
+  `id` int(11) NOT NULL,
+  `event_type` varchar(50) DEFAULT NULL,
+  `description` text DEFAULT NULL,
   `timestamp` datetime DEFAULT NULL,
-  `user_id` int DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `user_id` int(11) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -144,13 +144,13 @@ CREATE TABLE `events` (
 --
 
 CREATE TABLE `form_configurations` (
-  `id` int NOT NULL,
-  `domain_id` int DEFAULT NULL,
-  `header_text` text COLLATE utf8mb3_unicode_ci,
-  `footer_text` text COLLATE utf8mb3_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `domain_id` int(11) DEFAULT NULL,
+  `header_text` text DEFAULT NULL,
+  `footer_text` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -159,14 +159,14 @@ CREATE TABLE `form_configurations` (
 --
 
 CREATE TABLE `form_domains` (
-  `id` int NOT NULL,
-  `domain` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `group_name` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `telegram_chat_id` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `domain` varchar(255) NOT NULL,
+  `group_name` varchar(255) NOT NULL,
+  `telegram_chat_id` varchar(255) NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `form_domains`
@@ -185,14 +185,14 @@ INSERT INTO `form_domains` (`id`, `domain`, `group_name`, `telegram_chat_id`, `a
 --
 
 CREATE TABLE `form_game_options` (
-  `id` int NOT NULL,
-  `game_name` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `domain_id` int DEFAULT NULL,
-  `display_order` int NOT NULL DEFAULT '0',
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `game_name` varchar(255) NOT NULL,
+  `domain_id` int(11) DEFAULT NULL,
+  `display_order` int(11) NOT NULL DEFAULT 0,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `form_game_options`
@@ -218,14 +218,14 @@ INSERT INTO `form_game_options` (`id`, `game_name`, `domain_id`, `display_order`
 --
 
 CREATE TABLE `form_payment_methods` (
-  `id` int NOT NULL,
-  `method_name` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `domain_id` int DEFAULT NULL,
-  `display_order` int NOT NULL DEFAULT '0',
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `method_name` varchar(255) NOT NULL,
+  `domain_id` int(11) DEFAULT NULL,
+  `display_order` int(11) NOT NULL DEFAULT 0,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `form_payment_methods`
@@ -244,23 +244,23 @@ INSERT INTO `form_payment_methods` (`id`, `method_name`, `domain_id`, `display_o
 --
 
 CREATE TABLE `form_submissions` (
-  `id` int NOT NULL,
+  `id` int(11) NOT NULL,
   `amount` decimal(10,2) NOT NULL,
-  `game` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `game_id` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `facebook_name` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `transaction_number` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `group_id` bigint NOT NULL,
-  `status` enum('pending_validation','validated','declined','completed') COLLATE utf8mb3_unicode_ci NOT NULL,
-  `validator_id` bigint DEFAULT NULL,
-  `fulfiller_id` bigint DEFAULT NULL,
+  `game` varchar(255) NOT NULL,
+  `game_id` varchar(255) NOT NULL,
+  `facebook_name` varchar(255) NOT NULL,
+  `transaction_number` varchar(255) NOT NULL,
+  `group_id` bigint(20) NOT NULL,
+  `status` enum('pending_validation','validated','declined','completed') NOT NULL,
+  `validator_id` bigint(20) DEFAULT NULL,
+  `fulfiller_id` bigint(20) DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `validated_at` datetime DEFAULT NULL,
   `completed_at` datetime DEFAULT NULL,
-  `telegram_notification_sent` tinyint(1) DEFAULT '0',
-  `telegram_message_id` bigint DEFAULT NULL,
-  `telegram_chat_id` bigint DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `telegram_notification_sent` tinyint(1) DEFAULT 0,
+  `telegram_message_id` bigint(20) DEFAULT NULL,
+  `telegram_chat_id` bigint(20) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -269,12 +269,12 @@ CREATE TABLE `form_submissions` (
 --
 
 CREATE TABLE `fulfillers` (
-  `id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `group_id` int NOT NULL,
-  `payment_methods` text COLLATE utf8mb3_unicode_ci,
-  `status` varchar(20) COLLATE utf8mb3_unicode_ci DEFAULT 'active'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `payment_methods` text DEFAULT NULL,
+  `status` varchar(20) DEFAULT 'active'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -283,13 +283,13 @@ CREATE TABLE `fulfillers` (
 --
 
 CREATE TABLE `fulfiller_metrics` (
-  `id` int NOT NULL,
-  `fulfiller_id` int NOT NULL,
-  `batch_id` int NOT NULL,
-  `tickets_completed` int DEFAULT '0',
-  `average_completion_time` int DEFAULT '0',
-  `error_rate` decimal(5,2) DEFAULT '0.00',
-  `timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `id` int(11) NOT NULL,
+  `fulfiller_id` int(11) NOT NULL,
+  `batch_id` int(11) NOT NULL,
+  `tickets_completed` int(11) DEFAULT 0,
+  `average_completion_time` int(11) DEFAULT 0,
+  `error_rate` decimal(5,2) DEFAULT 0.00,
+  `timestamp` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -299,11 +299,11 @@ CREATE TABLE `fulfiller_metrics` (
 --
 
 CREATE TABLE `fulfillment_groups` (
-  `id` int NOT NULL,
-  `name` varchar(80) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `capacity` int NOT NULL DEFAULT '10',
-  `status` varchar(20) COLLATE utf8mb3_unicode_ci DEFAULT 'active'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `name` varchar(80) NOT NULL,
+  `capacity` int(11) NOT NULL DEFAULT 10,
+  `status` varchar(20) DEFAULT 'active'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -312,11 +312,11 @@ CREATE TABLE `fulfillment_groups` (
 --
 
 CREATE TABLE `password_history` (
-  `id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `password_hash` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -325,16 +325,16 @@ CREATE TABLE `password_history` (
 --
 
 CREATE TABLE `password_policy` (
-  `id` int NOT NULL DEFAULT '1',
-  `min_length` int NOT NULL DEFAULT '8',
-  `require_uppercase` tinyint(1) NOT NULL DEFAULT '1',
-  `require_lowercase` tinyint(1) NOT NULL DEFAULT '1',
-  `require_number` tinyint(1) NOT NULL DEFAULT '1',
-  `require_special` tinyint(1) NOT NULL DEFAULT '1',
-  `expiry_days` int NOT NULL DEFAULT '90',
-  `password_history` int NOT NULL DEFAULT '3',
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL DEFAULT 1,
+  `min_length` int(11) NOT NULL DEFAULT 8,
+  `require_uppercase` tinyint(1) NOT NULL DEFAULT 1,
+  `require_lowercase` tinyint(1) NOT NULL DEFAULT 1,
+  `require_number` tinyint(1) NOT NULL DEFAULT 1,
+  `require_special` tinyint(1) NOT NULL DEFAULT 1,
+  `expiry_days` int(11) NOT NULL DEFAULT 90,
+  `password_history` int(11) NOT NULL DEFAULT 3,
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -343,11 +343,11 @@ CREATE TABLE `password_policy` (
 --
 
 CREATE TABLE `password_reset_requests` (
-  `id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `request_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `reset_expiry` timestamp NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `request_date` timestamp NULL DEFAULT current_timestamp(),
+  `reset_expiry` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -356,12 +356,12 @@ CREATE TABLE `password_reset_requests` (
 --
 
 CREATE TABLE `permissions` (
-  `id` int NOT NULL,
-  `name` varchar(100) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `permissions`
@@ -396,12 +396,12 @@ INSERT INTO `permissions` (`id`, `name`, `description`, `created_at`, `updated_a
 --
 
 CREATE TABLE `roles` (
-  `id` int NOT NULL,
-  `name` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `description` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `roles`
@@ -420,10 +420,10 @@ INSERT INTO `roles` (`id`, `name`, `description`, `created_at`, `updated_at`) VA
 --
 
 CREATE TABLE `role_permissions` (
-  `role_id` int NOT NULL,
-  `permission_id` int NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `role_id` int(11) NOT NULL,
+  `permission_id` int(11) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `role_permissions`
@@ -484,16 +484,16 @@ INSERT INTO `role_permissions` (`role_id`, `permission_id`, `created_at`) VALUES
 --
 
 CREATE TABLE `sessions` (
-  `id` varchar(128) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `user_id` int NOT NULL,
-  `ip_address` varchar(45) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `user_agent` text COLLATE utf8mb3_unicode_ci,
-  `payload` text COLLATE utf8mb3_unicode_ci NOT NULL,
-  `last_activity` int NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `is_active` tinyint(1) DEFAULT '1'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` varchar(128) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `user_agent` text DEFAULT NULL,
+  `payload` text NOT NULL,
+  `last_activity` int(11) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `is_active` tinyint(1) DEFAULT 1
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -502,10 +502,10 @@ CREATE TABLE `sessions` (
 --
 
 CREATE TABLE `system_metrics` (
-  `id` int NOT NULL,
-  `metric_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` int(11) NOT NULL,
+  `metric_name` varchar(50) NOT NULL,
   `metric_value` decimal(10,2) NOT NULL,
-  `timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `timestamp` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -515,29 +515,29 @@ CREATE TABLE `system_metrics` (
 --
 
 CREATE TABLE `tickets` (
-  `id` int NOT NULL,
-  `domain_id` int DEFAULT NULL,
-  `facebook_name` varchar(255) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `ticket_id` varchar(20) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `user_id` int NOT NULL,
-  `payment_method` varchar(20) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `payment_tag` varchar(255) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `account_name` varchar(255) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
+  `id` int(11) NOT NULL,
+  `domain_id` int(11) DEFAULT NULL,
+  `facebook_name` varchar(255) DEFAULT NULL,
+  `ticket_id` varchar(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `payment_method` varchar(20) NOT NULL,
+  `payment_tag` varchar(255) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL,
-  `game` varchar(255) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `game_id` varchar(255) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `image_path` varchar(255) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `status` varchar(20) COLLATE utf8mb3_unicode_ci DEFAULT 'new',
-  `chat_group_id` varchar(255) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `game` varchar(255) DEFAULT NULL,
+  `game_id` varchar(255) DEFAULT NULL,
+  `image_path` varchar(255) DEFAULT NULL,
+  `status` varchar(20) DEFAULT 'new',
+  `chat_group_id` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
   `completion_time` timestamp NULL DEFAULT NULL,
   `completed_at` timestamp NULL DEFAULT NULL,
-  `completed_by` int DEFAULT NULL,
-  `error_type` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `error_details` text COLLATE utf8mb3_unicode_ci,
+  `completed_by` int(11) DEFAULT NULL,
+  `error_type` varchar(50) DEFAULT NULL,
+  `error_details` text DEFAULT NULL,
   `error_reported_at` timestamp NULL DEFAULT NULL,
-  `error_reported_by` int DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `error_reported_by` int(11) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `tickets`
@@ -578,13 +578,13 @@ INSERT INTO `tickets` (`id`, `domain_id`, `facebook_name`, `ticket_id`, `user_id
 --
 
 CREATE TABLE `transactions` (
-  `id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `transaction_type` enum('credit','debit') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `transaction_type` enum('credit','debit') NOT NULL,
   `amount` decimal(10,2) NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
-  `reference_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `description` text DEFAULT NULL,
+  `reference_id` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -594,21 +594,21 @@ CREATE TABLE `transactions` (
 --
 
 CREATE TABLE `users` (
-  `id` int NOT NULL,
-  `username` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `password` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `status` enum('active','inactive','suspended') COLLATE utf8mb3_unicode_ci DEFAULT 'active',
+  `id` int(11) NOT NULL,
+  `username` varchar(255) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `password` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `status` enum('active','inactive','suspended') DEFAULT 'active',
   `last_login` datetime DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `last_activity` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
-  `phone` varchar(20) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `failed_login_attempts` int DEFAULT '0',
+  `phone` varchar(20) DEFAULT NULL,
+  `failed_login_attempts` int(11) DEFAULT 0,
   `last_login_attempt` timestamp NULL DEFAULT NULL,
   `password_changed_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `users`
@@ -630,13 +630,13 @@ INSERT INTO `users` (`id`, `username`, `email`, `password`, `created_at`, `statu
 --
 
 CREATE TABLE `user_activity_logs` (
-  `id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `activity_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
-  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user_agent` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `activity_type` varchar(50) NOT NULL,
+  `description` text DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -658,11 +658,11 @@ DELIMITER ;
 --
 
 CREATE TABLE `user_balances` (
-  `id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `balance` decimal(10,2) DEFAULT '0.00',
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `balance` decimal(10,2) DEFAULT 0.00,
   `last_transaction_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -672,10 +672,10 @@ CREATE TABLE `user_balances` (
 --
 
 CREATE TABLE `user_roles` (
-  `user_id` int NOT NULL,
-  `role_id` int NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `user_id` int(11) NOT NULL,
+  `role_id` int(11) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `user_roles`
@@ -698,22 +698,451 @@ INSERT INTO `user_roles` (`user_id`, `role_id`, `created_at`) VALUES
 --
 
 CREATE TABLE `wallets` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `type` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `address` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `balance` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `status` enum('active','inactive','pending') COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'active',
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `address` varchar(255) NOT NULL,
+  `balance` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `status` enum('active','inactive','pending') NOT NULL DEFAULT 'active',
   `last_connected_at` timestamp NULL DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `wallets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
--- --------------------------------------------------------
+--
+-- Indexes for dumped tables
+--
 
+--
+-- Indexes for table `batches`
+--
+ALTER TABLE `batches`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_batch_id` (`batch_id`),
+  ADD KEY `idx_batch_status` (`status`),
+  ADD KEY `idx_batch_fulfiller` (`fulfiller_id`),
+  ADD KEY `idx_batch_payment` (`payment_method`),
+  ADD KEY `idx_batch_dates` (`created_at`,`completed_at`);
+
+--
+-- Indexes for table `batch_tickets`
+--
+ALTER TABLE `batch_tickets`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `ticket_id` (`ticket_id`),
+  ADD KEY `idx_ticket_status` (`status`),
+  ADD KEY `idx_ticket_batch` (`batch_id`),
+  ADD KEY `idx_ticket_dates` (`assigned_at`,`completed_at`);
+
+--
+-- Indexes for table `bot_settings`
+--
+ALTER TABLE `bot_settings`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `completion_images`
+--
+ALTER TABLE `completion_images`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `form_id` (`form_id`);
+
+--
+-- Indexes for table `csrf_tokens`
+--
+ALTER TABLE `csrf_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_token` (`token`),
+  ADD KEY `idx_user_token` (`user_id`,`token`);
+
+--
+-- Indexes for table `events`
+--
+ALTER TABLE `events`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `form_configurations`
+--
+ALTER TABLE `form_configurations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `domain_id` (`domain_id`);
+
+--
+-- Indexes for table `form_domains`
+--
+ALTER TABLE `form_domains`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `domain` (`domain`);
+
+--
+-- Indexes for table `form_game_options`
+--
+ALTER TABLE `form_game_options`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `domain_id` (`domain_id`);
+
+--
+-- Indexes for table `form_payment_methods`
+--
+ALTER TABLE `form_payment_methods`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `domain_id` (`domain_id`);
+
+--
+-- Indexes for table `form_submissions`
+--
+ALTER TABLE `form_submissions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_status_notification` (`status`,`telegram_notification_sent`);
+
+--
+-- Indexes for table `fulfillers`
+--
+ALTER TABLE `fulfillers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `group_id` (`group_id`);
+
+--
+-- Indexes for table `fulfiller_metrics`
+--
+ALTER TABLE `fulfiller_metrics`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_fulfiller_performance` (`fulfiller_id`,`timestamp`),
+  ADD KEY `idx_batch_metrics` (`batch_id`);
+
+--
+-- Indexes for table `fulfillment_groups`
+--
+ALTER TABLE `fulfillment_groups`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `password_history`
+--
+ALTER TABLE `password_history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `password_policy`
+--
+ALTER TABLE `password_policy`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `password_reset_requests`
+--
+ALTER TABLE `password_reset_requests`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `permissions`
+--
+ALTER TABLE `permissions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`),
+  ADD KEY `idx_permission_name` (`name`);
+
+--
+-- Indexes for table `roles`
+--
+ALTER TABLE `roles`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`),
+  ADD KEY `idx_role_name` (`name`);
+
+--
+-- Indexes for table `role_permissions`
+--
+ALTER TABLE `role_permissions`
+  ADD PRIMARY KEY (`role_id`,`permission_id`),
+  ADD KEY `idx_role_permission` (`role_id`,`permission_id`),
+  ADD KEY `fk_role_permissions_permission` (`permission_id`);
+
+--
+-- Indexes for table `sessions`
+--
+ALTER TABLE `sessions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `idx_session_active` (`is_active`,`last_activity`);
+
+--
+-- Indexes for table `system_metrics`
+--
+ALTER TABLE `system_metrics`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_metric_name` (`metric_name`),
+  ADD KEY `idx_metric_date` (`timestamp`);
+
+--
+-- Indexes for table `tickets`
+--
+ALTER TABLE `tickets`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ticket_id` (`ticket_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `domain_id` (`domain_id`);
+
+--
+-- Indexes for table `transactions`
+--
+ALTER TABLE `transactions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_transactions` (`user_id`,`transaction_type`),
+  ADD KEY `idx_transaction_date` (`created_at`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `username` (`username`),
+  ADD UNIQUE KEY `idx_username` (`username`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_last_activity` (`last_activity`),
+  ADD KEY `idx_deleted_at` (`deleted_at`);
+
+--
+-- Indexes for table `user_activity_logs`
+--
+ALTER TABLE `user_activity_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_activity` (`user_id`,`activity_type`),
+  ADD KEY `idx_activity_date` (`created_at`);
+
+--
+-- Indexes for table `user_balances`
+--
+ALTER TABLE `user_balances`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_user_balance` (`user_id`),
+  ADD KEY `idx_balance_update` (`updated_at`);
+
+--
+-- Indexes for table `user_roles`
+--
+ALTER TABLE `user_roles`
+  ADD PRIMARY KEY (`user_id`,`role_id`),
+  ADD KEY `idx_user_role` (`user_id`,`role_id`),
+  ADD KEY `fk_user_roles_role` (`role_id`);
+
+--
+-- Indexes for table `wallets`
+--
+ALTER TABLE `wallets`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `batches`
+--
+ALTER TABLE `batches`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `batch_tickets`
+--
+ALTER TABLE `batch_tickets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `bot_settings`
+--
+ALTER TABLE `bot_settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `completion_images`
+--
+ALTER TABLE `completion_images`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `csrf_tokens`
+--
+ALTER TABLE `csrf_tokens`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `events`
+--
+ALTER TABLE `events`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `form_configurations`
+--
+ALTER TABLE `form_configurations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `form_domains`
+--
+ALTER TABLE `form_domains`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `form_game_options`
+--
+ALTER TABLE `form_game_options`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT for table `form_payment_methods`
+--
+ALTER TABLE `form_payment_methods`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `form_submissions`
+--
+ALTER TABLE `form_submissions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `fulfillers`
+--
+ALTER TABLE `fulfillers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `fulfiller_metrics`
+--
+ALTER TABLE `fulfiller_metrics`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `fulfillment_groups`
+--
+ALTER TABLE `fulfillment_groups`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `password_history`
+--
+ALTER TABLE `password_history`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `password_reset_requests`
+--
+ALTER TABLE `password_reset_requests`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `permissions`
+--
+ALTER TABLE `permissions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+--
+-- AUTO_INCREMENT for table `roles`
+--
+ALTER TABLE `roles`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `system_metrics`
+--
+ALTER TABLE `system_metrics`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `tickets`
+--
+ALTER TABLE `tickets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+
+--
+-- AUTO_INCREMENT for table `transactions`
+--
+ALTER TABLE `transactions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT for table `user_activity_logs`
+--
+ALTER TABLE `user_activity_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `user_balances`
+--
+ALTER TABLE `user_balances`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wallets`
+--
+ALTER TABLE `wallets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `csrf_tokens`
+--
+ALTER TABLE `csrf_tokens`
+  ADD CONSTRAINT `fk_csrf_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `fulfiller_metrics`
+--
+ALTER TABLE `fulfiller_metrics`
+  ADD CONSTRAINT `fk_fulfiller_metrics_batch` FOREIGN KEY (`batch_id`) REFERENCES `batches` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `password_history`
+--
+ALTER TABLE `password_history`
+  ADD CONSTRAINT `password_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `password_reset_requests`
+--
+ALTER TABLE `password_reset_requests`
+  ADD CONSTRAINT `password_reset_requests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `transactions`
+--
+ALTER TABLE `transactions`
+  ADD CONSTRAINT `fk_transactions_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `user_activity_logs`
+--
+ALTER TABLE `user_activity_logs`
+  ADD CONSTRAINT `fk_user_activity_logs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `user_balances`
+--
+ALTER TABLE `user_balances`
+  ADD CONSTRAINT `fk_user_balances_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `wallets`
+--
+ALTER TABLE `wallets`
+  ADD CONSTRAINT `wallets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
