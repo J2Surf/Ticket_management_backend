@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -136,5 +137,32 @@ export class AuthService {
       ...result,
       accessToken,
     };
+  }
+
+  async logout(userId: number) {
+    try {
+      // Find the user
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      // Update user's last activity
+      user.last_activity = new Date();
+      await this.userRepository.save(user);
+
+      return {
+        message: 'Logout successful',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new UnauthorizedException('Invalid logout request');
+    }
   }
 }
