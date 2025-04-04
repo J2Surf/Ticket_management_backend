@@ -229,7 +229,7 @@ export class TicketsController {
   ) {
     return this.ticketsService.completeTicket(
       id,
-      req.user,
+      req.user.userId,
       body.paymentImageUrl,
       body.transactionId,
       body.user_id,

@@ -148,7 +148,7 @@ export class TicketsService {
 
   async completeTicket(
     id: string,
-    fulfiller: User,
+    fulfiller_id: number,
     paymentImageUrl: string,
     transactionId: string,
     user_id: number,
@@ -168,15 +168,15 @@ export class TicketsService {
 
     // Create transactions
     const transactions = [
+      // {
+      //   user_id: user_id,
+      //   amount: ticket.amount,
+      //   transaction_type: TransactionType.CREDIT,
+      //   description: 'Ticket completion payment',
+      //   reference_id: ticket.ticket_id,
+      // },
       {
-        user_id: user_id,
-        amount: ticket.amount,
-        transaction_type: TransactionType.CREDIT,
-        description: 'Ticket completion payment',
-        reference_id: ticket.ticket_id,
-      },
-      {
-        user_id: Number(fulfiller.id),
+        user_id: fulfiller_id,
         amount: fulfillerFee,
         transaction_type: TransactionType.CREDIT,
         description: 'Fulfiller fee',
@@ -199,7 +199,7 @@ export class TicketsService {
     });
     if (formSubmission) {
       formSubmission.status = FormSubmissionStatus.COMPLETED;
-      formSubmission.fulfiller_id = Number(fulfiller.id);
+      formSubmission.fulfiller_id = fulfiller_id;
       formSubmission.completed_at = new Date();
       await this.formSubmissionRepository.save(formSubmission);
     }
@@ -207,7 +207,7 @@ export class TicketsService {
     // Update ticket
     ticket.status = TicketStatus.COMPLETED;
     ticket.completed_at = new Date();
-    ticket.completed_by = Number(fulfiller.id);
+    ticket.completed_by = fulfiller_id;
     ticket.image_path = paymentImageUrl;
     return this.ticketRepository.save(ticket);
   }
