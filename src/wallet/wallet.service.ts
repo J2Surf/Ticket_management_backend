@@ -10,12 +10,15 @@ import { Wallet, WalletType } from './entities/wallet.entity';
 import { ConnectWalletDto } from './dto/connect-wallet.dto';
 import { TransactionDto } from './dto/transaction.dto';
 import { UserRole } from '../auth/enums/user-role.enum';
+import { Transaction } from './entities/transaction.entity';
 
 @Injectable()
 export class WalletService {
   constructor(
     @InjectRepository(Wallet)
     private walletRepository: Repository<Wallet>,
+    @InjectRepository(Transaction)
+    private transactionRepository: Repository<Transaction>,
   ) {}
 
   async connectWallet(
@@ -60,7 +63,21 @@ export class WalletService {
     // }
 
     wallet.balance = Number(wallet.balance) + Number(transactionDto.amount);
-    return this.walletRepository.save(wallet);
+
+    // Save the updated wallet
+    const updatedWallet = await this.walletRepository.save(wallet);
+
+    // Create and save the transaction record
+    const transaction = this.transactionRepository.create({
+      user_id: userId,
+      amount: transactionDto.amount,
+      type: 'DEPOSIT',
+      description: `Deposit to ${transactionDto.type} wallet`,
+    });
+
+    await this.transactionRepository.save(transaction);
+
+    return updatedWallet;
   }
 
   async withdraw(
@@ -68,13 +85,15 @@ export class WalletService {
     userRole: UserRole,
     transactionDto: TransactionDto,
   ): Promise<Wallet> {
+    console.log('userId', userId);
     const wallet = await this.walletRepository.findOne({
       where: {
-        userId,
+        // userId,
         type: transactionDto.type,
       },
     });
 
+    console.log('wallet', wallet);
     if (!wallet) {
       throw new NotFoundException('Wallet not found');
     }
@@ -90,12 +109,28 @@ export class WalletService {
     //   );
     // }
 
+    console.log('transactionDto', transactionDto);
     if (Number(wallet.balance) < Number(transactionDto.amount)) {
       throw new BadRequestException('Insufficient balance');
     }
 
     wallet.balance = Number(wallet.balance) - Number(transactionDto.amount);
-    return this.walletRepository.save(wallet);
+
+    // Save the updated wallet
+    const updatedWallet = await this.walletRepository.save(wallet);
+
+    console.log('userId', userId);
+    // Create and save the transaction record
+    const transaction = this.transactionRepository.create({
+      user_id: userId,
+      amount: transactionDto.amount,
+      type: 'WITHDRAWAL',
+      description: `Withdrawal from ${transactionDto.type} wallet`,
+    });
+
+    await this.transactionRepository.save(transaction);
+
+    return updatedWallet;
   }
 
   async getWallet(userId: number, type: WalletType): Promise<Wallet> {

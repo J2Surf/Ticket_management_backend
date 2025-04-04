@@ -2,36 +2,32 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Wallet } from './wallet.entity';
 
-@Entity()
+@Entity('transactions')
 export class Transaction {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ name: 'user_id' })
+  user_id: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
 
   @Column({
+    name: 'transaction_type',
     type: 'enum',
     enum: ['DEPOSIT', 'WITHDRAWAL'],
     default: 'DEPOSIT',
   })
   type: 'DEPOSIT' | 'WITHDRAWAL';
 
-  @Column('decimal', { precision: 10, scale: 2 })
-  balance: number;
+  @Column({ nullable: true })
+  description: string;
 
-  @ManyToOne(() => Wallet, (wallet) => wallet.transactions)
-  wallet: Wallet;
-
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

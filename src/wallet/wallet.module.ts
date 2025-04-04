@@ -9,10 +9,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { User } from '../users/entities/user.entity';
+import { Transaction } from './entities/transaction.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Wallet, User]),
+    TypeOrmModule.forFeature([Wallet, User, Transaction]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -117,9 +117,10 @@ export class WalletController {
     description: 'Forbidden - Insufficient permissions',
   })
   async withdraw(@Request() req, @Body() transactionDto: TransactionDto) {
+    console.log('withdraw', req.user);
     return this.walletService.withdraw(
-      req.user.id,
-      req.user.role,
+      req.user.userId,
+      req.user.roles,
       transactionDto,
     );
   }

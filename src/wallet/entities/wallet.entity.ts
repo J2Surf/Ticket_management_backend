@@ -59,9 +59,6 @@ export class Wallet {
   @Column({ name: 'last_connected_at', nullable: true })
   lastConnectedAt: Date;
 
-  @OneToMany(() => Transaction, (transaction) => transaction.wallet)
-  transactions: Transaction[];
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
