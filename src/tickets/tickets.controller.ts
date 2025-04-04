@@ -55,7 +55,7 @@ export class TicketsController {
     },
   })
   async create(@Body() createTicketDto: CreateTicketDto, @Request() req) {
-    const clientId = req.body.clientId;
+    const clientId = req.user.userId;
     return this.ticketsService.create(createTicketDto, req.user, {
       id: clientId,
     } as any);

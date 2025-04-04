@@ -50,7 +50,7 @@ export class TicketsService {
     ticket.domain_id = Number(client.id);
     ticket.facebook_name = createTicketDto.facebook_name;
     ticket.ticket_id = formSubmission.transaction_number;
-    ticket.user_id = Number(customer.id);
+    ticket.user_id = Number(client.id);
     ticket.payment_method = createTicketDto.payment_method;
     ticket.payment_tag = createTicketDto.payment_tag;
     ticket.account_name = createTicketDto.account_name;
