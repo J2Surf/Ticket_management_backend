@@ -27,23 +27,15 @@ export class WalletService {
       where: {
         userId,
         type: connectWalletDto.type,
+        address: connectWalletDto.walletAddress,
       },
     });
 
-    if (existingWallet) {
-      throw new BadRequestException(
-        'Wallet of this type already exists for the user',
-      );
+    if (!existingWallet) {
+      throw new NotFoundException('Wallet not found');
     }
 
-    const wallet = this.walletRepository.create({
-      userId,
-      type: connectWalletDto.type,
-      address: connectWalletDto.walletAddress,
-      balance: 0,
-    });
-
-    return this.walletRepository.save(wallet);
+    return existingWallet;
   }
 
   async deposit(
