@@ -6,7 +6,7 @@ export class TransactionDto {
   @ApiProperty({
     description: 'Type of wallet',
     enum: WalletType,
-    example: WalletType.USDT,
+    example: WalletType.ETH,
   })
   @IsEnum(WalletType)
   type: WalletType;

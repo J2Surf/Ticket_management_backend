@@ -1,15 +1,23 @@
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { WalletType } from '../entities/wallet.entity';
+import { WalletType, TokenType } from '../entities/wallet.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ConnectWalletDto {
   @ApiProperty({
     description: 'Type of wallet',
     enum: WalletType,
-    example: WalletType.USDT,
+    example: WalletType.ETH,
   })
   @IsEnum(WalletType)
   type: WalletType;
+
+  @ApiProperty({
+    description: 'Token type',
+    enum: TokenType,
+    example: TokenType.USDT,
+  })
+  @IsEnum(TokenType)
+  tokenType: TokenType;
 
   @ApiProperty({
     description: 'Wallet address',

@@ -19,6 +19,10 @@ export enum WalletStatus {
 
 export enum WalletType {
   ETH = 'ETH',
+}
+
+export enum TokenType {
+  ETH = 'ETH',
   BTC = 'BTC',
   USDT = 'USDT',
   THB = 'THB',
@@ -39,9 +43,18 @@ export class Wallet {
   @Column({
     type: 'enum',
     enum: WalletType,
-    default: WalletType.USDT,
+    default: WalletType.ETH,
+    name: 'type',
   })
   type: WalletType;
+
+  @Column({
+    type: 'enum',
+    enum: TokenType,
+    default: TokenType.USDT,
+    name: 'token_type',
+  })
+  tokenType: TokenType;
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
   balance: number;
@@ -58,6 +71,9 @@ export class Wallet {
 
   @Column({ name: 'last_connected_at', nullable: true })
   lastConnectedAt: Date;
+
+  @Column({ name: 'private_key', nullable: true })
+  privateKey: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

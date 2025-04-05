@@ -17,6 +17,7 @@ import { WalletRoleGuard } from './guards/wallet-role.guard';
 import { Roles } from './decorators/roles.decorator';
 import { WalletType } from './entities/wallet.entity';
 import { UserRole } from '../auth/enums/user-role.enum';
+import { EthereumWalletDto } from './dto/ethereum-wallet.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -160,5 +161,75 @@ export class WalletController {
     });
 
     return this.walletService.getBalance(req.user.userId, type);
+  }
+
+  @Post('create/ethereum')
+  @Roles(UserRole.USER, UserRole.ADMIN, UserRole.FULFILLER)
+  @ApiOperation({ summary: 'Create a new Ethereum wallet' })
+  @ApiResponse({
+    status: 201,
+    description: 'Ethereum wallet created successfully',
+    type: EthereumWalletDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'User already has an Ethereum wallet',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
+  async createEthereumWallet(@Request() req): Promise<EthereumWalletDto> {
+    return this.walletService.createEthereumWallet(req.user.userId);
+  }
+
+  @Get('private-key/:walletId')
+  @Roles(UserRole.USER, UserRole.ADMIN, UserRole.FULFILLER)
+  @ApiOperation({ summary: 'Get private key for Ethereum wallet' })
+  @ApiResponse({
+    status: 200,
+    description: 'Private key retrieved successfully',
+    schema: {
+      example: {
+        privateKey: '0x123...abc',
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Wallet not found' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
+  async getPrivateKey(@Request() req, @Param('walletId') walletId: number) {
+    const privateKey = await this.walletService.getPrivateKey(
+      req.user.userId,
+      walletId,
+    );
+    return { privateKey };
+  }
+
+  @Get('public-key/:walletId')
+  @Roles(UserRole.USER, UserRole.ADMIN, UserRole.FULFILLER)
+  @ApiOperation({ summary: 'Get public key for Ethereum wallet' })
+  @ApiResponse({
+    status: 200,
+    description: 'Public key retrieved successfully',
+    schema: {
+      example: {
+        publicKey: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Wallet not found' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
+  async getPublicKey(@Request() req, @Param('walletId') walletId: number) {
+    const publicKey = await this.walletService.getPublicKey(
+      req.user.userId,
+      walletId,
+    );
+    return { publicKey };
   }
 }
