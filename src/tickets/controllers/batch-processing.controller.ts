@@ -37,7 +37,7 @@ export class BatchProcessingController {
   async startBatchProcessing(@Param('batchId') batchId: string, @Req() req) {
     return this.batchProcessingService.startBatchProcessing(
       Number(batchId),
-      req.user.id,
+      req.user.userId,
     );
   }
 
@@ -52,7 +52,7 @@ export class BatchProcessingController {
     return this.batchProcessingService.completeBatchTicket(
       Number(batchId),
       Number(ticketId),
-      req.user.id,
+      req.user.userId,
       paymentImageUrl,
     );
   }

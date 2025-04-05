@@ -59,7 +59,7 @@ export class WalletController {
     @Body() connectWalletDto: ConnectWalletDto,
   ) {
     return this.walletService.connectWallet(
-      req.user.id,
+      req.user.userId,
       req.user.role,
       connectWalletDto,
     );
@@ -89,7 +89,7 @@ export class WalletController {
   async deposit(@Request() req, @Body() transactionDto: TransactionDto) {
     console.log('deposit', req.user);
     return this.walletService.deposit(
-      req.user.id,
+      req.user.userId,
       req.user.role,
       transactionDto,
     );
@@ -127,15 +127,17 @@ export class WalletController {
 
   @Get()
   async getAllWallets(@Request() req) {
+    console.log('getAllWallets', req.user);
     if (req.user.role === UserRole.ADMIN) {
       return this.walletService.getAllWalletsForAdmin();
     }
-    return this.walletService.getAllWallets(req.user.id);
+    console.log('getAllWallets', req.user.userId);
+    return this.walletService.getAllWallets(req.user.userId);
   }
 
   @Get(':type')
   async getWallet(@Request() req, @Param('type') type: WalletType) {
-    return this.walletService.getWallet(req.user.id, type);
+    return this.walletService.getWallet(req.user.userId, type);
   }
 
   @Get('balance/:type')
@@ -157,6 +159,6 @@ export class WalletController {
       type,
     });
 
-    return this.walletService.getBalance(req.user.id, type);
+    return this.walletService.getBalance(req.user.userId, type);
   }
 }

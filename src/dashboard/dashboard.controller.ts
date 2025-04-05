@@ -24,13 +24,13 @@ export class DashboardController {
   @Get('customer')
   @Roles(UserRole.CUSTOMER)
   async getCustomerDashboard(@Request() req) {
-    return this.dashboardService.getCustomerDashboard(req.user.id);
+    return this.dashboardService.getCustomerDashboard(req.user.userId);
   }
 
   @Get('fulfiller')
   @Roles(UserRole.FULFILLER)
   async getFulfillerDashboard(@Request() req) {
-    return this.dashboardService.getFulfillerDashboard(req.user.id);
+    return this.dashboardService.getFulfillerDashboard(req.user.userId);
   }
 
   // Wallet-related endpoints
@@ -40,24 +40,27 @@ export class DashboardController {
     @Request() req,
     @Body() connectWalletDto: ConnectWalletDto,
   ) {
-    return this.dashboardService.connectWallet(req.user.id, connectWalletDto);
+    return this.dashboardService.connectWallet(
+      req.user.userId,
+      connectWalletDto,
+    );
   }
 
   @Post('wallet/deposit')
   @Roles(UserRole.CUSTOMER)
   async deposit(@Request() req, @Body() transactionDto: TransactionDto) {
-    return this.dashboardService.deposit(req.user.id, transactionDto);
+    return this.dashboardService.deposit(req.user.userId, transactionDto);
   }
 
   @Post('wallet/withdraw')
   @Roles(UserRole.FULFILLER)
   async withdraw(@Request() req, @Body() transactionDto: TransactionDto) {
-    return this.dashboardService.withdraw(req.user.id, transactionDto);
+    return this.dashboardService.withdraw(req.user.userId, transactionDto);
   }
 
   @Get('wallet/balance/:type')
   @Roles(UserRole.CUSTOMER, UserRole.FULFILLER)
   async getWalletBalance(@Request() req, @Param('type') type: WalletType) {
-    return this.dashboardService.getWalletBalance(req.user.id, type);
+    return this.dashboardService.getWalletBalance(req.user.userId, type);
   }
 }
