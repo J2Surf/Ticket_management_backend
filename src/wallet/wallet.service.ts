@@ -335,9 +335,30 @@ export class WalletService {
 
   // Admin-specific methods
   async getAllWalletsForAdmin(): Promise<Wallet[]> {
-    return this.walletRepository.find({
-      relations: ['user'],
-    });
+    return this.walletRepository
+      .createQueryBuilder('wallet')
+      .innerJoin('wallet.user', 'user')
+      .innerJoin('user.roles', 'role')
+      .where('role.id = :roleId', { roleId: 2 })
+      .getMany();
+  }
+
+  async getAllWalletsForFulfiller(): Promise<Wallet[]> {
+    return this.walletRepository
+      .createQueryBuilder('wallet')
+      .innerJoin('wallet.user', 'user')
+      .innerJoin('user.roles', 'role')
+      .where('role.id = :roleId', { roleId: 3 })
+      .getMany();
+  }
+
+  async getAllWalletsForUser(): Promise<Wallet[]> {
+    return this.walletRepository
+      .createQueryBuilder('wallet')
+      .innerJoin('wallet.user', 'user')
+      .innerJoin('user.roles', 'role')
+      .where('role.id = :roleId', { roleId: 4 })
+      .getMany();
   }
 
   async getBalance(userId: number, type: WalletType) {

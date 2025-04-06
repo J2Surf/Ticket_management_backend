@@ -103,6 +103,7 @@ export class WalletController {
 
     // Set required fields for deposit
     cryptoTransactionDto.user_id = req.user.userId;
+    cryptoTransactionDto.user_id_from = req.user.userId;
     cryptoTransactionDto.type = TransactionType.DEPOSIT;
     cryptoTransactionDto.status = TransactionStatus.COMPLETED;
     cryptoTransactionDto.reference_id = `DEP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -157,14 +158,40 @@ export class WalletController {
     );
   }
 
-  @Get()
+  @Get('wallets')
+  @Roles(UserRole.ADMIN, UserRole.FULFILLER, UserRole.USER)
   async getAllWallets(@Request() req) {
     console.log('getAllWallets', req.user);
     if (req.user.role === UserRole.ADMIN) {
       return this.walletService.getAllWalletsForAdmin();
     }
+    if (req.user.role === UserRole.FULFILLER) {
+      return this.walletService.getAllWalletsForFulfiller();
+    }
+
     console.log('getAllWallets', req.user.userId);
     return this.walletService.getAllWallets(req.user.userId);
+  }
+
+  @Get('wallets/admin')
+  @Roles(UserRole.ADMIN)
+  async getAllWalletsForAdmin(@Request() req) {
+    console.log('getAllWalletsForAdmin', req.user);
+    return this.walletService.getAllWalletsForAdmin();
+  }
+
+  @Get('wallets/fulfiller')
+  @Roles(UserRole.USER, UserRole.FULFILLER)
+  async getAllWalletsForFulfiller(@Request() req) {
+    console.log('getAllWalletsForFulfiller', req.user);
+    return this.walletService.getAllWalletsForFulfiller();
+  }
+
+  @Get('wallets/user')
+  @Roles(UserRole.USER, UserRole.FULFILLER)
+  async getAllWalletsForUser(@Request() req) {
+    console.log('getAllWalletsForUser', req.user);
+    return this.walletService.getAllWalletsForUser();
   }
 
   @Get(':type')
