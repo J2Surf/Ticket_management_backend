@@ -64,7 +64,7 @@ export class WalletController {
     @Request() req,
     @Body() connectWalletDto: ConnectWalletDto,
   ) {
-    return this.walletService.connectWallet(
+    return await this.walletService.connectWallet(
       req.user.userId,
       req.user.role,
       connectWalletDto,

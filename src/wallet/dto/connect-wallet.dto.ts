@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { WalletType, TokenType } from '../entities/wallet.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -18,6 +18,13 @@ export class ConnectWalletDto {
   })
   @IsEnum(TokenType)
   tokenType: TokenType;
+
+  @ApiProperty({
+    description: 'Balance',
+    example: 0,
+  })
+  @IsNumber()
+  balance: number;
 
   @ApiProperty({
     description: 'Wallet address',

@@ -200,18 +200,7 @@ export class WalletService {
       throw new NotFoundException('Wallet not found');
     }
 
-    // Create a new wallet if it doesn't exist
-    const newWallet = this.walletRepository.create({
-      userId,
-      type: connectWalletDto.type,
-      address: connectWalletDto.walletAddress,
-      balance: 0,
-      status: WalletStatus.ACTIVE,
-      lastConnectedAt: new Date(),
-    });
-
-    return newWallet;
-    // return this.walletRepository.save(newWallet);
+    return existingWallet;
   }
 
   async deposit(
