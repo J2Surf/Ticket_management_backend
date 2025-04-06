@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
-import { WalletType } from '../entities/wallet.entity';
+import { WalletType, TokenType } from '../entities/wallet.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class TransactionDto {
@@ -10,6 +10,14 @@ export class TransactionDto {
   })
   @IsEnum(WalletType)
   type: WalletType;
+
+  @ApiProperty({
+    description: 'Token type',
+    enum: TokenType,
+    example: TokenType.USDT,
+  })
+  @IsEnum(TokenType)
+  tokenType: TokenType;
 
   @ApiProperty({
     description: 'Transaction amount',

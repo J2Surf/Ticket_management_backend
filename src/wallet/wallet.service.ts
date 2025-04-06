@@ -71,7 +71,7 @@ export class WalletService {
       type: savedWallet.type,
       address: savedWallet.address,
       balance: savedWallet.balance,
-      privateKey: wallet.privateKey, // Return the original private key only during creation
+      // privateKey: wallet.privateKey, // Return the original private key only during creation
       createdAt: savedWallet.createdAt,
       updatedAt: savedWallet.updatedAt,
     };
@@ -215,6 +215,7 @@ export class WalletService {
       where: {
         userId,
         type: transactionDto.type,
+        tokenType: transactionDto.tokenType,
       },
     });
 
