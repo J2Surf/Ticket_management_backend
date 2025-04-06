@@ -36,7 +36,7 @@ export class CryptoTransactionDto {
   })
   @IsEnum(TransactionType)
   @IsNotEmpty()
-  type: TransactionType;
+  transaction_type: TransactionType;
 
   @ApiProperty({
     description: 'Transaction amount',

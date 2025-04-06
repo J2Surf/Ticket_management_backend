@@ -104,7 +104,7 @@ export class WalletController {
     // Set required fields for deposit
     cryptoTransactionDto.user_id = req.user.userId;
     cryptoTransactionDto.user_id_from = req.user.userId;
-    cryptoTransactionDto.type = TransactionType.DEPOSIT;
+    cryptoTransactionDto.transaction_type = TransactionType.DEPOSIT;
     cryptoTransactionDto.status = TransactionStatus.COMPLETED;
     cryptoTransactionDto.reference_id = `DEP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -147,7 +147,7 @@ export class WalletController {
 
     // Set required fields for withdrawal
     cryptoTransactionDto.user_id = req.user.userId;
-    cryptoTransactionDto.type = TransactionType.WITHDRAWAL;
+    cryptoTransactionDto.transaction_type = TransactionType.WITHDRAWAL;
     cryptoTransactionDto.status = TransactionStatus.COMPLETED;
     cryptoTransactionDto.reference_id = `WD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
