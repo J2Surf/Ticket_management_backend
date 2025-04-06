@@ -194,12 +194,42 @@ export class WalletController {
     return this.walletService.getAllWalletsForUser();
   }
 
+  @Get('transactions')
+  @Roles(UserRole.USER, UserRole.ADMIN, UserRole.FULFILLER)
+  @ApiOperation({ summary: 'Get crypto transactions for the user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Transactions retrieved successfully',
+    schema: {
+      example: {
+        transactions: [
+          {
+            id: 1,
+            type: 'DEPOSIT',
+            amount: 100.5,
+            description: 'Deposit to ETH wallet',
+            reference_id: 'DEP-1234567890-abc123',
+            created_at: '2024-02-20T10:00:00Z',
+            status: 'COMPLETED',
+            token_type: 'USDT',
+            transaction_hash: '0x123...abc',
+          },
+        ],
+      },
+    },
+  })
+  async getTransactions(@Request() req) {
+    console.log('getTransactions', req.user);
+    return this.walletService.getTransactions(req.user.userId);
+  }
+
   @Get(':type')
   async getWallet(@Request() req, @Param('type') type: WalletType) {
     return this.walletService.getWallet(req.user.userId, type);
   }
 
   @Get('balance/:type')
+  @Roles(UserRole.USER, UserRole.ADMIN, UserRole.FULFILLER)
   @ApiOperation({ summary: 'Get wallet balance' })
   @ApiResponse({
     status: 200,
@@ -212,13 +242,26 @@ export class WalletController {
     },
   })
   @ApiResponse({ status: 404, description: 'Wallet not found' })
-  getBalance(@Request() req, @Param('type') type: WalletType) {
-    console.log('getBalance called with:', {
-      userId: req.user?.id,
-      type,
-    });
+  async getBalance(@Request() req, @Param('type') type: WalletType) {
+    try {
+      console.log('getBalance called with:', {
+        userId: req.user?.userId,
+        type,
+      });
 
-    return this.walletService.getBalance(req.user.userId, type);
+      if (!req.user || !req.user.userId) {
+        throw new BadRequestException('User information is missing');
+      }
+
+      if (!type) {
+        throw new BadRequestException('Wallet type is required');
+      }
+
+      return await this.walletService.getBalance(req.user.userId, type);
+    } catch (error) {
+      console.error('Error in getBalance:', error);
+      throw error;
+    }
   }
 
   @Post('create/ethereum')

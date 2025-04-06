@@ -301,6 +301,25 @@ export class WalletService {
     }
   }
 
+  async getTransactions(userId: number): Promise<CryptoTransaction[]> {
+    console.log('getTransactions userId', userId);
+
+    try {
+      const transactions = await this.cryptoTransactionRepository.find();
+
+      console.log('getTransactions - Found transactions:', transactions.length);
+      console.log(
+        'getTransactions - First transaction:',
+        transactions.length > 0 ? transactions[0] : 'No transactions found',
+      );
+
+      return transactions;
+    } catch (error) {
+      console.error('getTransactions - Error:', error);
+      throw error;
+    }
+  }
+
   async getWallet(userId: number, type: WalletType): Promise<Wallet> {
     const wallet = await this.walletRepository.findOne({
       where: {
@@ -351,20 +370,42 @@ export class WalletService {
   }
 
   async getBalance(userId: number, type: WalletType) {
-    const wallet = await this.walletRepository.findOne({
-      where: {
-        userId,
-        type,
-      },
-    });
+    try {
+      if (!userId) {
+        throw new BadRequestException('User ID is required');
+      }
 
-    if (!wallet) {
-      throw new NotFoundException(`Wallet of type ${type} not found`);
+      if (!type) {
+        throw new BadRequestException('Wallet type is required');
+      }
+
+      console.log(`Finding wallet for user ${userId} with type ${type}`);
+
+      const wallet = await this.walletRepository.findOne({
+        where: {
+          userId,
+          type,
+        },
+      });
+
+      if (!wallet) {
+        console.log(`Wallet not found for user ${userId} with type ${type}`);
+        throw new NotFoundException(
+          `Wallet of type ${type} not found for user ${userId}`,
+        );
+      }
+
+      console.log(`Wallet found with balance: ${wallet.balance}`);
+
+      return {
+        balance: wallet.balance,
+        lastUpdated: wallet.updatedAt,
+        walletId: wallet.id,
+        address: wallet.address,
+      };
+    } catch (error) {
+      console.error('Error in getBalance service:', error);
+      throw error;
     }
-
-    return {
-      balance: wallet.balance,
-      lastUpdated: wallet.updatedAt,
-    };
   }
 }

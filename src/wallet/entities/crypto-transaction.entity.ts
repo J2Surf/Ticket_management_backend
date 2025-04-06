@@ -15,7 +15,7 @@ export class CryptoTransaction {
   user_id: number;
 
   @Column()
-  type: string;
+  transaction_type: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
