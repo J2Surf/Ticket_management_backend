@@ -19,6 +19,11 @@ import { WalletType } from './entities/wallet.entity';
 import { UserRole } from '../auth/enums/user-role.enum';
 import { EthereumWalletDto } from './dto/ethereum-wallet.dto';
 import {
+  CryptoTransactionDto,
+  TransactionType,
+  TransactionStatus,
+} from './dto/crypto-transaction.dto';
+import {
   ApiTags,
   ApiOperation,
   ApiResponse,
@@ -75,9 +80,12 @@ export class WalletController {
     schema: {
       example: {
         id: 1,
-        type: 'USDT',
+        type: TransactionType.DEPOSIT,
         amount: 100.0,
         balance: 100.0,
+        status: TransactionStatus.COMPLETED,
+        token_type: 'USDT',
+        reference_id: 'DEP-1234567890-abc123',
         timestamp: '2024-02-20T10:00:00Z',
       },
     },
@@ -87,12 +95,22 @@ export class WalletController {
     status: 403,
     description: 'Forbidden - User access required',
   })
-  async deposit(@Request() req, @Body() transactionDto: TransactionDto) {
+  async deposit(
+    @Request() req,
+    @Body() cryptoTransactionDto: CryptoTransactionDto,
+  ) {
     console.log('deposit', req.user);
+
+    // Set required fields for deposit
+    cryptoTransactionDto.user_id = req.user.userId;
+    cryptoTransactionDto.type = TransactionType.DEPOSIT;
+    cryptoTransactionDto.status = TransactionStatus.COMPLETED;
+    cryptoTransactionDto.reference_id = `DEP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     return this.walletService.deposit(
       req.user.userId,
       req.user.role,
-      transactionDto,
+      cryptoTransactionDto,
     );
   }
 
@@ -105,9 +123,12 @@ export class WalletController {
     schema: {
       example: {
         id: 1,
-        type: 'USDT',
+        type: TransactionType.WITHDRAWAL,
         amount: 50.0,
         balance: 50.0,
+        status: TransactionStatus.COMPLETED,
+        token_type: 'USDT',
+        reference_id: 'WD-1234567890-abc123',
         timestamp: '2024-02-20T10:00:00Z',
       },
     },
@@ -117,12 +138,22 @@ export class WalletController {
     status: 403,
     description: 'Forbidden - Insufficient permissions',
   })
-  async withdraw(@Request() req, @Body() transactionDto: TransactionDto) {
+  async withdraw(
+    @Request() req,
+    @Body() cryptoTransactionDto: CryptoTransactionDto,
+  ) {
     console.log('withdraw', req.user);
+
+    // Set required fields for withdrawal
+    cryptoTransactionDto.user_id = req.user.userId;
+    cryptoTransactionDto.type = TransactionType.WITHDRAWAL;
+    cryptoTransactionDto.status = TransactionStatus.COMPLETED;
+    cryptoTransactionDto.reference_id = `WD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     return this.walletService.withdraw(
       req.user.userId,
-      req.user.roles,
-      transactionDto,
+      req.user.role,
+      cryptoTransactionDto,
     );
   }
 

@@ -16,6 +16,12 @@ import { ConnectWalletDto } from './dto/connect-wallet.dto';
 import { TransactionDto } from './dto/transaction.dto';
 import { UserRole } from '../auth/enums/user-role.enum';
 import { Transaction } from './entities/transaction.entity';
+import { CryptoTransaction } from './entities/crypto-transaction.entity';
+import {
+  CryptoTransactionDto,
+  TransactionType,
+  TransactionStatus,
+} from './dto/crypto-transaction.dto';
 import { ethers } from 'ethers';
 import { EthereumWalletDto } from './dto/ethereum-wallet.dto';
 import * as crypto from 'crypto';
@@ -27,6 +33,8 @@ export class WalletService {
     private walletRepository: Repository<Wallet>,
     @InjectRepository(Transaction)
     private transactionRepository: Repository<Transaction>,
+    @InjectRepository(CryptoTransaction)
+    private cryptoTransactionRepository: Repository<CryptoTransaction>,
   ) {}
 
   async createEthereumWallet(userId: number): Promise<EthereumWalletDto> {
@@ -209,13 +217,13 @@ export class WalletService {
   async deposit(
     userId: number,
     userRole: UserRole,
-    transactionDto: TransactionDto,
+    cryptoTransactionDto: CryptoTransactionDto,
   ): Promise<Wallet> {
     const wallet = await this.walletRepository.findOne({
       where: {
         userId,
-        type: transactionDto.type,
-        tokenType: transactionDto.tokenType,
+        type: WalletType.ETH, // Assuming ETH wallet type for crypto transactions
+        tokenType: cryptoTransactionDto.token_type,
       },
     });
 
@@ -223,80 +231,85 @@ export class WalletService {
       throw new NotFoundException('Wallet not found');
     }
 
-    // Only CUSTOMER and USER can deposit
-    // if (userRole !== UserRole.CUSTOMER && userRole !== UserRole.USER) {
-    //   throw new ForbiddenException('Only customers and users can deposit');
-    // }
+    // Start a transaction
+    const queryRunner =
+      this.walletRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    wallet.balance = Number(wallet.balance) + Number(transactionDto.amount);
+    try {
+      // Update wallet balance
+      wallet.balance =
+        Number(wallet.balance) + Number(cryptoTransactionDto.amount);
+      const updatedWallet = await queryRunner.manager.save(wallet);
 
-    // Save the updated wallet
-    const updatedWallet = await this.walletRepository.save(wallet);
+      // Create and save the crypto transaction record
+      const cryptoTransaction =
+        this.cryptoTransactionRepository.create(cryptoTransactionDto);
+      await queryRunner.manager.save(cryptoTransaction);
 
-    // Create and save the transaction record
-    const transaction = this.transactionRepository.create({
-      user_id: userId,
-      amount: transactionDto.amount,
-      type: 'DEPOSIT',
-      description: `Deposit to ${transactionDto.type} wallet`,
-    });
-
-    await this.transactionRepository.save(transaction);
-
-    return updatedWallet;
+      // Commit the transaction
+      await queryRunner.commitTransaction();
+      return updatedWallet;
+    } catch (error) {
+      // Rollback the transaction in case of error
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      // Release the query runner
+      await queryRunner.release();
+    }
   }
 
   async withdraw(
     userId: number,
     userRole: UserRole,
-    transactionDto: TransactionDto,
+    cryptoTransactionDto: CryptoTransactionDto,
   ): Promise<Wallet> {
-    console.log('userId', userId);
     const wallet = await this.walletRepository.findOne({
       where: {
-        // userId,
-        type: transactionDto.type,
+        userId,
+        type: WalletType.ETH, // Assuming ETH wallet type for crypto transactions
+        tokenType: cryptoTransactionDto.token_type,
       },
     });
 
-    console.log('wallet', wallet);
     if (!wallet) {
       throw new NotFoundException('Wallet not found');
     }
 
-    // CUSTOMER, ADMIN, and FULFILLER can withdraw
-    // if (
-    //   userRole !== UserRole.CUSTOMER &&
-    //   userRole !== UserRole.ADMIN &&
-    //   userRole !== UserRole.FULFILLER
-    // ) {
-    //   throw new ForbiddenException(
-    //     'Only customers, admins, and fulfillers can withdraw',
-    //   );
-    // }
-
-    console.log('transactionDto', transactionDto);
-    if (Number(wallet.balance) < Number(transactionDto.amount)) {
+    if (Number(wallet.balance) < Number(cryptoTransactionDto.amount)) {
       throw new BadRequestException('Insufficient balance');
     }
 
-    wallet.balance = Number(wallet.balance) - Number(transactionDto.amount);
+    // Start a transaction
+    const queryRunner =
+      this.walletRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    // Save the updated wallet
-    const updatedWallet = await this.walletRepository.save(wallet);
+    try {
+      // Update wallet balance
+      wallet.balance =
+        Number(wallet.balance) - Number(cryptoTransactionDto.amount);
+      const updatedWallet = await queryRunner.manager.save(wallet);
 
-    console.log('userId', userId);
-    // Create and save the transaction record
-    const transaction = this.transactionRepository.create({
-      user_id: userId,
-      amount: transactionDto.amount,
-      type: 'WITHDRAWAL',
-      description: `Withdrawal from ${transactionDto.type} wallet`,
-    });
+      // Create and save the crypto transaction record
+      const cryptoTransaction =
+        this.cryptoTransactionRepository.create(cryptoTransactionDto);
+      await queryRunner.manager.save(cryptoTransaction);
 
-    await this.transactionRepository.save(transaction);
-
-    return updatedWallet;
+      // Commit the transaction
+      await queryRunner.commitTransaction();
+      return updatedWallet;
+    } catch (error) {
+      // Rollback the transaction in case of error
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      // Release the query runner
+      await queryRunner.release();
+    }
   }
 
   async getWallet(userId: number, type: WalletType): Promise<Wallet> {
