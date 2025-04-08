@@ -20,10 +20,10 @@ export class Transaction {
   @Column({
     name: 'transaction_type',
     type: 'enum',
-    enum: ['DEPOSIT', 'WITHDRAWAL'],
+    enum: ['DEPOSIT', 'WITHDRAW'],
     default: 'DEPOSIT',
   })
-  type: 'DEPOSIT' | 'WITHDRAWAL';
+  type: 'DEPOSIT' | 'WITHDRAW';
 
   @Column({ nullable: true })
   description: string;

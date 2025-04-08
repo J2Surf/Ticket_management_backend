@@ -248,6 +248,8 @@ export class WalletService {
         Number(wallet_to.balance) + Number(cryptoTransactionDto.amount);
       const updatedWallet_to = await queryRunner.manager.save(wallet_to);
 
+      console.log('service deposit: ', cryptoTransactionDto);
+
       // Create and save the crypto transaction record
       const cryptoTransaction =
         this.cryptoTransactionRepository.create(cryptoTransactionDto);
@@ -271,7 +273,23 @@ export class WalletService {
     userRole: UserRole,
     cryptoTransactionDto: CryptoTransactionDto,
   ): Promise<Wallet> {
-    const wallet = await this.walletRepository.findOne({
+    const wallet_from = await this.walletRepository.findOne({
+      where: {
+        userId: cryptoTransactionDto.user_id_from,
+        type: WalletType.ETH, // Assuming ETH wallet type for crypto transactions
+        tokenType: cryptoTransactionDto.token_type,
+      },
+    });
+
+    if (!wallet_from) {
+      throw new NotFoundException('Wallet not found');
+    }
+
+    if (Number(wallet_from.balance) < Number(cryptoTransactionDto.amount)) {
+      throw new BadRequestException('Insufficient balance');
+    }
+
+    const wallet_to = await this.walletRepository.findOne({
       where: {
         userId,
         type: WalletType.ETH, // Assuming ETH wallet type for crypto transactions
@@ -279,12 +297,8 @@ export class WalletService {
       },
     });
 
-    if (!wallet) {
+    if (!wallet_to) {
       throw new NotFoundException('Wallet not found');
-    }
-
-    if (Number(wallet.balance) < Number(cryptoTransactionDto.amount)) {
-      throw new BadRequestException('Insufficient balance');
     }
 
     // Start a transaction
@@ -295,10 +309,15 @@ export class WalletService {
 
     try {
       // Update wallet balance
-      wallet.balance =
-        Number(wallet.balance) - Number(cryptoTransactionDto.amount);
-      const updatedWallet = await queryRunner.manager.save(wallet);
+      wallet_from.balance =
+        Number(wallet_from.balance) - Number(cryptoTransactionDto.amount);
+      const updatedWallet = await queryRunner.manager.save(wallet_from);
 
+      wallet_to.balance =
+        Number(wallet_to.balance) + Number(cryptoTransactionDto.amount);
+      const updatedWallet_to = await queryRunner.manager.save(wallet_to);
+
+      console.log('service withdraw: ', cryptoTransactionDto);
       // Create and save the crypto transaction record
       const cryptoTransaction =
         this.cryptoTransactionRepository.create(cryptoTransactionDto);

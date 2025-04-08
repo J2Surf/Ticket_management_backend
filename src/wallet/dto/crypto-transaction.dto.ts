@@ -11,7 +11,7 @@ import { TokenType } from '../entities/wallet.entity';
 
 export enum TransactionType {
   DEPOSIT = 'DEPOSIT',
-  WITHDRAWAL = 'WITHDRAWAL',
+  WITHDRAW = 'WITHDRAW',
 }
 
 export enum TransactionStatus {

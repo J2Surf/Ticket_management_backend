@@ -121,7 +121,7 @@ export class WalletController {
     schema: {
       example: {
         id: 1,
-        type: TransactionType.WITHDRAWAL,
+        type: TransactionType.WITHDRAW,
         amount: 50.0,
         balance: 50.0,
         status: TransactionStatus.COMPLETED,
@@ -140,12 +140,10 @@ export class WalletController {
     @Request() req,
     @Body() cryptoTransactionDto: CryptoTransactionDto,
   ) {
-    console.log('withdraw', req.user);
-
     // Set required fields for withdrawal
     cryptoTransactionDto.user_id = req.user.userId;
-    cryptoTransactionDto.transaction_type = TransactionType.WITHDRAWAL;
-    cryptoTransactionDto.status = TransactionStatus.COMPLETED;
+    cryptoTransactionDto.transaction_type = TransactionType.WITHDRAW;
+    cryptoTransactionDto.status = TransactionStatus.PENDING;
     cryptoTransactionDto.reference_id = `WD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     return this.walletService.withdraw(
@@ -158,7 +156,6 @@ export class WalletController {
   @Get('wallets')
   @Roles(UserRole.ADMIN, UserRole.FULFILLER, UserRole.USER)
   async getAllWallets(@Request() req) {
-    console.log('getAllWallets', req.user);
     if (req.user.role === UserRole.ADMIN) {
       return this.walletService.getAllWalletsForAdmin();
     }
@@ -166,14 +163,12 @@ export class WalletController {
       return this.walletService.getAllWalletsForFulfiller();
     }
 
-    console.log('getAllWallets', req.user.userId);
     return this.walletService.getAllWallets(req.user.userId);
   }
 
   @Get('wallets/admin')
   @Roles(UserRole.ADMIN, UserRole.USER, UserRole.FULFILLER)
   async getAllWalletsForAdmin(@Request() req) {
-    console.log('getAllWalletsForAdmin', req.user);
     return this.walletService.getAllWalletsForAdmin();
   }
 
