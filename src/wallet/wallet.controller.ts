@@ -72,7 +72,7 @@ export class WalletController {
   }
 
   @Post('deposit')
-  @Roles(UserRole.CUSTOMER, UserRole.USER)
+  @Roles(UserRole.USER)
   @ApiOperation({ summary: 'Deposit funds to wallet' })
   @ApiResponse({
     status: 201,
@@ -99,13 +99,13 @@ export class WalletController {
     @Request() req,
     @Body() cryptoTransactionDto: CryptoTransactionDto,
   ) {
-    console.log('deposit', req.user);
+    console.log('deposit', req.user, cryptoTransactionDto);
 
     // Set required fields for deposit
-    cryptoTransactionDto.user_id = req.user.userId;
-    cryptoTransactionDto.user_id_from = req.user.userId;
+    // cryptoTransactionDto.user_id = req.user.userId;
+    // cryptoTransactionDto.user_id_from = req.user.userId;
     cryptoTransactionDto.transaction_type = TransactionType.DEPOSIT;
-    cryptoTransactionDto.status = TransactionStatus.COMPLETED;
+    cryptoTransactionDto.status = TransactionStatus.PENDING;
     cryptoTransactionDto.reference_id = `DEP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     return this.walletService.deposit(
@@ -174,7 +174,7 @@ export class WalletController {
   }
 
   @Get('wallets/admin')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.USER, UserRole.FULFILLER)
   async getAllWalletsForAdmin(@Request() req) {
     console.log('getAllWalletsForAdmin', req.user);
     return this.walletService.getAllWalletsForAdmin();
