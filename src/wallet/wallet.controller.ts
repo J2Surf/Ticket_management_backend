@@ -99,11 +99,8 @@ export class WalletController {
     @Request() req,
     @Body() cryptoTransactionDto: CryptoTransactionDto,
   ) {
-    console.log('deposit', req.user, cryptoTransactionDto);
-
     // Set required fields for deposit
-    // cryptoTransactionDto.user_id = req.user.userId;
-    // cryptoTransactionDto.user_id_from = req.user.userId;
+    cryptoTransactionDto.user_id = req.user.userId;
     cryptoTransactionDto.transaction_type = TransactionType.DEPOSIT;
     cryptoTransactionDto.status = TransactionStatus.PENDING;
     cryptoTransactionDto.reference_id = `DEP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
