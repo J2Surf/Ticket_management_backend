@@ -171,21 +171,16 @@ export class TicketsController {
   @ApiBody({
     schema: {
       type: 'object',
-      required: ['paymentImageUrl', 'transactionId', 'user_id'],
+      required: ['paymentImageUrl', 'fulfiller_id'],
       properties: {
         paymentImageUrl: {
           type: 'string',
           description: 'URL of the payment image',
           example: 'https://example.com/payment/123456.jpg',
         },
-        transactionId: {
-          type: 'string',
-          description: 'Transaction ID',
-          example: 'TRX123456',
-        },
-        user_id: {
+        fulfiller_id: {
           type: 'number',
-          description: 'User ID',
+          description: 'Fulfiller ID',
           example: 1,
         },
       },
@@ -200,8 +195,7 @@ export class TicketsController {
         status: 'completed',
         completed_at: '2024-03-20T11:30:00Z',
         paymentImageUrl: 'https://example.com/payment/123456.jpg',
-        transactionId: 'TRX123456',
-        user_id: 1,
+        fulfiller_id: 1,
       },
     },
   })
@@ -223,16 +217,13 @@ export class TicketsController {
   })
   completeTicket(
     @Param('id') id: string,
-    @Request() req,
     @Body()
-    body: { paymentImageUrl: string; transactionId: string; user_id: number },
+    body: { paymentImageUrl: string; fulfiller_id: number },
   ) {
     return this.ticketsService.completeTicket(
       id,
-      req.user.userId,
+      body.fulfiller_id,
       body.paymentImageUrl,
-      body.transactionId,
-      body.user_id,
     );
   }
 

@@ -150,8 +150,6 @@ export class TicketsService {
     id: string,
     fulfiller_id: number,
     paymentImageUrl: string,
-    transactionId: string,
-    user_id: number,
   ): Promise<Ticket> {
     const ticket = await this.findOne(id);
     if (ticket.status !== TicketStatus.VALIDATED) {
