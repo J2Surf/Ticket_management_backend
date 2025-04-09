@@ -8,6 +8,7 @@ import {
   Request,
   Query,
   BadRequestException,
+  Patch,
 } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { ConnectWalletDto } from './dto/connect-wallet.dto';
@@ -324,5 +325,77 @@ export class WalletController {
       walletId,
     );
     return { publicKey };
+  }
+
+  @Post('send')
+  @Roles(UserRole.USER, UserRole.ADMIN, UserRole.FULFILLER)
+  @ApiOperation({ summary: 'Send cryptocurrency to another address' })
+  @ApiResponse({
+    status: 201,
+    description: 'Transaction sent successfully',
+    schema: {
+      example: {
+        transaction_hash: '0x123...abc',
+        status: TransactionStatus.COMPLETED,
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid transaction data' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
+  async sendTransaction(
+    @Request() req,
+    @Body()
+    sendTransactionDto: {
+      from_wallet_id: number;
+      to_address: string;
+      amount: number;
+      token_type: string;
+      description?: string;
+    },
+  ) {
+    // Validate the request
+    if (
+      !sendTransactionDto.from_wallet_id ||
+      !sendTransactionDto.to_address ||
+      !sendTransactionDto.amount
+    ) {
+      throw new BadRequestException(
+        'Missing required fields: from_wallet_id, to_address, amount',
+      );
+    }
+
+    // Call the service to send the transaction
+    return this.walletService.sendTransaction(
+      req.user.userId,
+      req.user.role,
+      sendTransactionDto,
+    );
+  }
+
+  @Patch('transactions/:id')
+  @Roles(UserRole.USER, UserRole.ADMIN, UserRole.FULFILLER)
+  @ApiOperation({ summary: 'Update a transaction' })
+  @ApiResponse({
+    status: 200,
+    description: 'Transaction updated successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid transaction data' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
+  async updateTransaction(
+    @Request() req,
+    @Param('id') id: number,
+    @Body() updateData: Partial<CryptoTransactionDto>,
+  ) {
+    return this.walletService.updateTransaction(
+      req.user.userId,
+      id,
+      updateData,
+    );
   }
 }

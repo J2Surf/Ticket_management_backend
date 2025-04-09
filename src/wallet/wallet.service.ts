@@ -443,4 +443,139 @@ export class WalletService {
       throw error;
     }
   }
+
+  async updateTransaction(
+    userId: number,
+    transactionId: number,
+    updateData: Partial<CryptoTransactionDto>,
+  ): Promise<CryptoTransaction> {
+    // Find the transaction
+    const transaction = await this.cryptoTransactionRepository.findOne({
+      where: {
+        id: transactionId,
+      },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    // Check if the user has permission to update this transaction
+    if (transaction.user_id !== userId) {
+      throw new ForbiddenException(
+        'You do not have permission to update this transaction',
+      );
+    }
+
+    // Update the transaction
+    Object.assign(transaction, updateData);
+    return await this.cryptoTransactionRepository.save(transaction);
+  }
+
+  async sendTransaction(
+    userId: number,
+    userRole: UserRole,
+    sendTransactionDto: {
+      from_wallet_id: number;
+      to_address: string;
+      amount: number;
+      token_type: string;
+      description?: string;
+    },
+  ): Promise<{ transaction_hash: string; status: TransactionStatus }> {
+    // Find the source wallet
+    const sourceWallet = await this.walletRepository.findOne({
+      where: {
+        id: sendTransactionDto.from_wallet_id,
+        userId,
+        type: WalletType.ETH,
+        tokenType: sendTransactionDto.token_type as TokenType,
+      },
+    });
+
+    if (!sourceWallet) {
+      throw new NotFoundException('Source wallet not found');
+    }
+
+    // Check if the wallet has sufficient balance
+    if (Number(sourceWallet.balance) < Number(sendTransactionDto.amount)) {
+      throw new BadRequestException('Insufficient balance');
+    }
+
+    // Get the private key for the wallet
+    const privateKey = await this.getPrivateKey(userId, sourceWallet.id);
+
+    // Create a provider and wallet instance
+    const provider = new ethers.providers.JsonRpcProvider(
+      process.env.ETHEREUM_RPC_URL,
+    );
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    try {
+      // Prepare the transaction
+      const tx = {
+        to: sendTransactionDto.to_address,
+        value: ethers.utils.parseEther(sendTransactionDto.amount.toString()),
+      };
+
+      // Send the transaction
+      const transaction = await wallet.sendTransaction(tx);
+
+      // Wait for the transaction to be mined
+      const receipt = await transaction.wait();
+
+      // Create a transaction record
+      const cryptoTransaction = this.cryptoTransactionRepository.create({
+        user_id: userId,
+        transaction_type: TransactionType.WITHDRAW,
+        amount: sendTransactionDto.amount,
+        description:
+          sendTransactionDto.description ||
+          `Transfer to ${sendTransactionDto.to_address}`,
+        wallet_id: sourceWallet.id,
+        status: TransactionStatus.COMPLETED,
+        address_from: sourceWallet.address,
+        address_to: sendTransactionDto.to_address,
+        token_type: sendTransactionDto.token_type as TokenType,
+        transaction_hash: receipt.transactionHash,
+      });
+
+      // Save the transaction
+      await this.cryptoTransactionRepository.save(cryptoTransaction);
+
+      // Update the wallet balance
+      sourceWallet.balance =
+        Number(sourceWallet.balance) - Number(sendTransactionDto.amount);
+      await this.walletRepository.save(sourceWallet);
+
+      return {
+        transaction_hash: receipt.transactionHash,
+        status: TransactionStatus.COMPLETED,
+      };
+    } catch (error) {
+      console.error('Error sending transaction:', error);
+
+      // Create a failed transaction record
+      const cryptoTransaction = this.cryptoTransactionRepository.create({
+        user_id: userId,
+        transaction_type: TransactionType.WITHDRAW,
+        amount: sendTransactionDto.amount,
+        description:
+          sendTransactionDto.description ||
+          `Transfer to ${sendTransactionDto.to_address}`,
+        wallet_id: sourceWallet.id,
+        status: TransactionStatus.FAILED,
+        address_from: sourceWallet.address,
+        address_to: sendTransactionDto.to_address,
+        token_type: sendTransactionDto.token_type as TokenType,
+      });
+
+      // Save the failed transaction
+      await this.cryptoTransactionRepository.save(cryptoTransaction);
+
+      throw new BadRequestException(
+        `Failed to send transaction: ${error.message}`,
+      );
+    }
+  }
 }
