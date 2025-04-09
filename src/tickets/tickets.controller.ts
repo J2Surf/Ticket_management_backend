@@ -127,7 +127,7 @@ export class TicketsController {
   }
 
   @Put(':id/validate')
-  @Roles(UserRole.USER)
+  @Roles(UserRole.USER, UserRole.FULFILLER)
   @ApiOperation({ summary: 'Validate a ticket' })
   @ApiParam({ name: 'id', description: 'Ticket ID' })
   @ApiResponse({
