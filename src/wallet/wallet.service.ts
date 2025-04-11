@@ -475,18 +475,12 @@ export class WalletService {
   async sendTransaction(
     userId: number,
     userRole: UserRole,
-    sendTransactionDto: {
-      from_wallet_id: number;
-      to_address: string;
-      amount: number;
-      token_type: string;
-      description?: string;
-    },
+    sendTransactionDto: CryptoTransactionDto,
   ): Promise<{ transaction_hash: string; status: TransactionStatus }> {
     // Find the source wallet
     const sourceWallet = await this.walletRepository.findOne({
       where: {
-        id: sendTransactionDto.from_wallet_id,
+        id: sendTransactionDto.wallet_id,
         userId,
         type: WalletType.ETH,
         tokenType: sendTransactionDto.token_type as TokenType,
@@ -514,7 +508,7 @@ export class WalletService {
     try {
       // Prepare the transaction
       const tx = {
-        to: sendTransactionDto.to_address,
+        to: sendTransactionDto.address_to,
         value: ethers.utils.parseEther(sendTransactionDto.amount.toString()),
       };
 
@@ -531,11 +525,11 @@ export class WalletService {
         amount: sendTransactionDto.amount,
         description:
           sendTransactionDto.description ||
-          `Transfer to ${sendTransactionDto.to_address}`,
+          `Transfer to ${sendTransactionDto.address_to}`,
         wallet_id: sourceWallet.id,
         status: TransactionStatus.COMPLETED,
         address_from: sourceWallet.address,
-        address_to: sendTransactionDto.to_address,
+        address_to: sendTransactionDto.address_to,
         token_type: sendTransactionDto.token_type as TokenType,
         transaction_hash: receipt.transactionHash,
       });
@@ -562,11 +556,11 @@ export class WalletService {
         amount: sendTransactionDto.amount,
         description:
           sendTransactionDto.description ||
-          `Transfer to ${sendTransactionDto.to_address}`,
+          `Transfer to ${sendTransactionDto.address_to}`,
         wallet_id: sourceWallet.id,
         status: TransactionStatus.FAILED,
         address_from: sourceWallet.address,
-        address_to: sendTransactionDto.to_address,
+        address_to: sendTransactionDto.address_to,
         token_type: sendTransactionDto.token_type as TokenType,
       });
 

@@ -348,18 +348,14 @@ export class WalletController {
   async sendTransaction(
     @Request() req,
     @Body()
-    sendTransactionDto: {
-      from_wallet_id: number;
-      to_address: string;
-      amount: number;
-      token_type: string;
-      description?: string;
-    },
+    sendTransactionDto: CryptoTransactionDto,
   ) {
     // Validate the request
     if (
-      !sendTransactionDto.from_wallet_id ||
-      !sendTransactionDto.to_address ||
+      !sendTransactionDto.address_from ||
+      !sendTransactionDto.address_to ||
+      !sendTransactionDto.user_id_from ||
+      !sendTransactionDto.user_id_to ||
       !sendTransactionDto.amount
     ) {
       throw new BadRequestException(
