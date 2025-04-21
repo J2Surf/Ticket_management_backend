@@ -5,12 +5,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   // const app = await NestFactory.create(AppModule);
   const fs = require('fs');
-  const keyFile = fs.readFileSync(
-    __dirname + 'C:/Certbot/archive/ecmrare.com/key.pem',
-  );
-  const certFile = fs.readFileSync(
-    __dirname + 'C:/Certbot/archive/ecmrare.com/cert.pem',
-  );
+  const keyFile = fs.readFileSync('C:/Certbot/archive/ecmrare.com/key.pem');
+  const certFile = fs.readFileSync('C:/Certbot/archive/ecmrare.com/cert.pem');
   const app = await NestFactory.create(AppModule, {
     httpsOptions: {
       key: keyFile,
