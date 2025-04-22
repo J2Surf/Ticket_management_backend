@@ -340,7 +340,11 @@ export class WalletService {
     console.log('getTransactions userId', userId);
 
     try {
-      const transactions = await this.cryptoTransactionRepository.find();
+      const transactions = await this.cryptoTransactionRepository.find({
+        order: {
+          created_at: 'DESC', // 'DESC' for descending order (newest first)
+        },
+      });
 
       console.log('getTransactions - Found transactions:', transactions.length);
       console.log(
