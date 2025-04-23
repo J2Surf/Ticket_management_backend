@@ -279,8 +279,8 @@ export class WalletController {
     return this.walletService.createEthereumWallet(req.user.userId);
   }
 
-  @Get('private-key/:walletId')
-  @Roles(UserRole.USER, UserRole.ADMIN, UserRole.FULFILLER)
+  @Get('private-key/:userId/:walletId')
+  @Roles(UserRole.ADMIN, UserRole.FULFILLER)
   @ApiOperation({ summary: 'Get private key for Ethereum wallet' })
   @ApiResponse({
     status: 200,
@@ -296,11 +296,12 @@ export class WalletController {
     status: 403,
     description: 'Forbidden - Insufficient permissions',
   })
-  async getPrivateKey(@Request() req, @Param('walletId') walletId: number) {
-    const privateKey = await this.walletService.getPrivateKey(
-      req.user.userId,
-      walletId,
-    );
+  async getPrivateKey(
+    @Request() req,
+    @Param('userId') userId: number,
+    @Param('walletId') walletId: number,
+  ) {
+    const privateKey = await this.walletService.getPrivateKey(userId, walletId);
     return { privateKey };
   }
 
