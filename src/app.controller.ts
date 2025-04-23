@@ -44,7 +44,7 @@ export class AppController {
       }
 
       // your normal logic
-      const fileUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/${file.filename}`;
+      const fileUrl = `${process.env.API_URL}/uploads/${file.filename}`;
 
       // Optionally save fileUrl to DB here
 
