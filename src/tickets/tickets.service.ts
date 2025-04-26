@@ -43,6 +43,7 @@ export class TicketsService {
     formSubmission.group_id = Number(client.id);
     formSubmission.status = FormSubmissionStatus.PENDING_VALIDATION;
     formSubmission.created_at = new Date();
+    formSubmission.telegram_chat_id = createTicketDto.telegram_chat_id;
     await this.formSubmissionRepository.save(formSubmission);
 
     // Create ticket
@@ -59,7 +60,7 @@ export class TicketsService {
     ticket.game_id = createTicketDto.game_id;
     ticket.image_path = createTicketDto.payment_qr_code;
     ticket.status = TicketStatus.NEW;
-    ticket.chat_group_id = client.id.toString();
+    ticket.chat_group_id = createTicketDto.telegram_chat_id;
 
     return this.ticketRepository.save(ticket);
   }

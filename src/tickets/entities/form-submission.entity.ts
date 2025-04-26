@@ -64,5 +64,5 @@ export class FormSubmission {
   telegram_message_id: number;
 
   @Column({ nullable: true })
-  telegram_chat_id: number;
+  telegram_chat_id: string;
 }

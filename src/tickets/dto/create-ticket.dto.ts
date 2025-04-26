@@ -65,4 +65,12 @@ export class CreateTicketDto {
   @IsString()
   @IsNotEmpty()
   payment_qr_code: string;
+
+  @ApiProperty({
+    description: 'Telegram chat id',
+    example: '-1002324697837',
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  telegram_chat_id: string;
 }
